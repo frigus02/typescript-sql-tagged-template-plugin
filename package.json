@@ -1,0 +1,30 @@
+{
+	"name": "typescript-sql-tagged-template-plugin",
+	"version": "0.0.1",
+	"description": "TypeScript language service plugin that adds type checking for sql tagged templates",
+	"keywords": [
+		"TypeScript",
+		"sql",
+		"templates"
+	],
+	"main": "build/index.js",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/frigus02/typescript-sql-tagged-template-plugin"
+	},
+	"dependencies": {
+		"typescript-template-language-service-decorator": "^2.2.0"
+	},
+	"devDependencies": {
+		"@types/jest": "^24.0.17",
+		"@types/node": "^12.7.1",
+		"jest": "^24.8.0",
+		"prettier": "^1.18.2",
+		"typescript": "^3.5.3"
+	},
+	"scripts": {
+		"compile": "tsc",
+		"test": "jest \"build/.+\\.test\\.js$\""
+	}
+}
