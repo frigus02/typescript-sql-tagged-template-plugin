@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+  main:
+    build: .
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: mysecretpassword
+    volumes:
+      - ..:/src
+    links:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d

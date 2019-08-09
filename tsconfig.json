@@ -4,8 +4,8 @@
 		"module": "commonjs",
 		"declaration": true,
 		"sourceMap": true,
-		"outDir": "./build",
-		"rootDir": "./src",
+		"outDir": "build",
+		"rootDir": "src",
 		"strict": true
 	}
 }
