@@ -1,4 +1,4 @@
-declare module "pg-query-native" {
+declare module "pg-query-emscripten" {
   interface PgNode {}
 
   /*
@@ -28,10 +28,10 @@ declare module "pg-query-native" {
    * The first field of every node is NodeTag. Each node created (with makeNode)
    * will have one of the following tags as the value of its first field.
    *
-   * Note that the numbers of the node tags are not contiguous. We left holes
-   * here so that we can add more tags without changing the existing enum's.
-   * (Since node tag numbers never exist outside backend memory, there's no
-   * real harm in renumbering, it just costs a full rebuild ...)
+   * Note that inserting or deleting node types changes the numbers of other
+   * node types later in the list.  This is no problem during development, since
+   * the node numbers are never stored on disk.  But don't do it in a released
+   * branch, because that would represent an ABI break for extensions.
    */
   const enum PgNodeTag {
       T_Invalid = 0,
@@ -44,359 +44,398 @@ declare module "pg-query-native" {
       T_TupleTableSlot = 7,
       T_Plan = 8,
       T_Result = 9,
-      T_ModifyTable = 10,
-      T_Append = 11,
-      T_MergeAppend = 12,
-      T_RecursiveUnion = 13,
-      T_BitmapAnd = 14,
-      T_BitmapOr = 15,
-      T_Scan = 16,
-      T_SeqScan = 17,
-      T_SampleScan = 18,
-      T_IndexScan = 19,
-      T_IndexOnlyScan = 20,
-      T_BitmapIndexScan = 21,
-      T_BitmapHeapScan = 22,
-      T_TidScan = 23,
-      T_SubqueryScan = 24,
-      T_FunctionScan = 25,
-      T_ValuesScan = 26,
-      T_CteScan = 27,
-      T_WorkTableScan = 28,
-      T_ForeignScan = 29,
-      T_CustomScan = 30,
-      T_Join = 31,
-      T_NestLoop = 32,
-      T_MergeJoin = 33,
-      T_HashJoin = 34,
-      T_Material = 35,
-      T_Sort = 36,
-      T_Group = 37,
-      T_Agg = 38,
-      T_WindowAgg = 39,
-      T_Unique = 40,
-      T_Hash = 41,
-      T_SetOp = 42,
-      T_LockRows = 43,
-      T_Limit = 44,
-      T_NestLoopParam = 45,
-      T_PlanRowMark = 46,
-      T_PlanInvalItem = 47,
-      T_PlanState = 48,
-      T_ResultState = 49,
-      T_ModifyTableState = 50,
-      T_AppendState = 51,
-      T_MergeAppendState = 52,
-      T_RecursiveUnionState = 53,
-      T_BitmapAndState = 54,
-      T_BitmapOrState = 55,
-      T_ScanState = 56,
-      T_SeqScanState = 57,
-      T_SampleScanState = 58,
-      T_IndexScanState = 59,
-      T_IndexOnlyScanState = 60,
-      T_BitmapIndexScanState = 61,
-      T_BitmapHeapScanState = 62,
-      T_TidScanState = 63,
-      T_SubqueryScanState = 64,
-      T_FunctionScanState = 65,
-      T_ValuesScanState = 66,
-      T_CteScanState = 67,
-      T_WorkTableScanState = 68,
-      T_ForeignScanState = 69,
-      T_CustomScanState = 70,
-      T_JoinState = 71,
-      T_NestLoopState = 72,
-      T_MergeJoinState = 73,
-      T_HashJoinState = 74,
-      T_MaterialState = 75,
-      T_SortState = 76,
-      T_GroupState = 77,
-      T_AggState = 78,
-      T_WindowAggState = 79,
-      T_UniqueState = 80,
-      T_HashState = 81,
-      T_SetOpState = 82,
-      T_LockRowsState = 83,
-      T_LimitState = 84,
-      T_Alias = 85,
-      T_RangeVar = 86,
-      T_Expr = 87,
-      T_Var = 88,
-      T_Const = 89,
-      T_Param = 90,
-      T_Aggref = 91,
-      T_GroupingFunc = 92,
-      T_WindowFunc = 93,
-      T_ArrayRef = 94,
-      T_FuncExpr = 95,
-      T_NamedArgExpr = 96,
-      T_OpExpr = 97,
-      T_DistinctExpr = 98,
-      T_NullIfExpr = 99,
-      T_ScalarArrayOpExpr = 100,
-      T_BoolExpr = 101,
-      T_SubLink = 102,
-      T_SubPlan = 103,
-      T_AlternativeSubPlan = 104,
-      T_FieldSelect = 105,
-      T_FieldStore = 106,
-      T_RelabelType = 107,
-      T_CoerceViaIO = 108,
-      T_ArrayCoerceExpr = 109,
-      T_ConvertRowtypeExpr = 110,
-      T_CollateExpr = 111,
-      T_CaseExpr = 112,
-      T_CaseWhen = 113,
-      T_CaseTestExpr = 114,
-      T_ArrayExpr = 115,
-      T_RowExpr = 116,
-      T_RowCompareExpr = 117,
-      T_CoalesceExpr = 118,
-      T_MinMaxExpr = 119,
-      T_XmlExpr = 120,
-      T_NullTest = 121,
-      T_BooleanTest = 122,
-      T_CoerceToDomain = 123,
-      T_CoerceToDomainValue = 124,
-      T_SetToDefault = 125,
-      T_CurrentOfExpr = 126,
-      T_InferenceElem = 127,
-      T_TargetEntry = 128,
-      T_RangeTblRef = 129,
-      T_JoinExpr = 130,
-      T_FromExpr = 131,
-      T_OnConflictExpr = 132,
-      T_IntoClause = 133,
-      T_ExprState = 134,
-      T_GenericExprState = 135,
-      T_WholeRowVarExprState = 136,
-      T_AggrefExprState = 137,
-      T_GroupingFuncExprState = 138,
-      T_WindowFuncExprState = 139,
-      T_ArrayRefExprState = 140,
-      T_FuncExprState = 141,
-      T_ScalarArrayOpExprState = 142,
-      T_BoolExprState = 143,
-      T_SubPlanState = 144,
-      T_AlternativeSubPlanState = 145,
-      T_FieldSelectState = 146,
-      T_FieldStoreState = 147,
-      T_CoerceViaIOState = 148,
-      T_ArrayCoerceExprState = 149,
-      T_ConvertRowtypeExprState = 150,
-      T_CaseExprState = 151,
-      T_CaseWhenState = 152,
-      T_ArrayExprState = 153,
-      T_RowExprState = 154,
-      T_RowCompareExprState = 155,
-      T_CoalesceExprState = 156,
-      T_MinMaxExprState = 157,
-      T_XmlExprState = 158,
-      T_NullTestState = 159,
-      T_CoerceToDomainState = 160,
-      T_DomainConstraintState = 161,
-      T_PlannerInfo = 162,
-      T_PlannerGlobal = 163,
-      T_RelOptInfo = 164,
-      T_IndexOptInfo = 165,
-      T_ParamPathInfo = 166,
-      T_Path = 167,
-      T_IndexPath = 168,
-      T_BitmapHeapPath = 169,
-      T_BitmapAndPath = 170,
-      T_BitmapOrPath = 171,
-      T_NestPath = 172,
-      T_MergePath = 173,
-      T_HashPath = 174,
-      T_TidPath = 175,
-      T_ForeignPath = 176,
-      T_CustomPath = 177,
-      T_AppendPath = 178,
-      T_MergeAppendPath = 179,
-      T_ResultPath = 180,
-      T_MaterialPath = 181,
-      T_UniquePath = 182,
-      T_EquivalenceClass = 183,
-      T_EquivalenceMember = 184,
-      T_PathKey = 185,
-      T_RestrictInfo = 186,
-      T_PlaceHolderVar = 187,
-      T_SpecialJoinInfo = 188,
-      T_AppendRelInfo = 189,
-      T_PlaceHolderInfo = 190,
-      T_MinMaxAggInfo = 191,
-      T_PlannerParamItem = 192,
-      T_MemoryContext = 193,
-      T_AllocSetContext = 194,
-      T_Value = 195,
-      T_Integer = 196,
-      T_Float = 197,
-      T_String = 198,
-      T_BitString = 199,
-      T_Null = 200,
-      T_List = 201,
-      T_IntList = 202,
-      T_OidList = 203,
-      T_Query = 204,
-      T_PlannedStmt = 205,
-      T_InsertStmt = 206,
-      T_DeleteStmt = 207,
-      T_UpdateStmt = 208,
-      T_SelectStmt = 209,
-      T_AlterTableStmt = 210,
-      T_AlterTableCmd = 211,
-      T_AlterDomainStmt = 212,
-      T_SetOperationStmt = 213,
-      T_GrantStmt = 214,
-      T_GrantRoleStmt = 215,
-      T_AlterDefaultPrivilegesStmt = 216,
-      T_ClosePortalStmt = 217,
-      T_ClusterStmt = 218,
-      T_CopyStmt = 219,
-      T_CreateStmt = 220,
-      T_DefineStmt = 221,
-      T_DropStmt = 222,
-      T_TruncateStmt = 223,
-      T_CommentStmt = 224,
-      T_FetchStmt = 225,
-      T_IndexStmt = 226,
-      T_CreateFunctionStmt = 227,
-      T_AlterFunctionStmt = 228,
-      T_DoStmt = 229,
-      T_RenameStmt = 230,
-      T_RuleStmt = 231,
-      T_NotifyStmt = 232,
-      T_ListenStmt = 233,
-      T_UnlistenStmt = 234,
-      T_TransactionStmt = 235,
-      T_ViewStmt = 236,
-      T_LoadStmt = 237,
-      T_CreateDomainStmt = 238,
-      T_CreatedbStmt = 239,
-      T_DropdbStmt = 240,
-      T_VacuumStmt = 241,
-      T_ExplainStmt = 242,
-      T_CreateTableAsStmt = 243,
-      T_CreateSeqStmt = 244,
-      T_AlterSeqStmt = 245,
-      T_VariableSetStmt = 246,
-      T_VariableShowStmt = 247,
-      T_DiscardStmt = 248,
-      T_CreateTrigStmt = 249,
-      T_CreatePLangStmt = 250,
-      T_CreateRoleStmt = 251,
-      T_AlterRoleStmt = 252,
-      T_DropRoleStmt = 253,
-      T_LockStmt = 254,
-      T_ConstraintsSetStmt = 255,
-      T_ReindexStmt = 256,
-      T_CheckPointStmt = 257,
-      T_CreateSchemaStmt = 258,
-      T_AlterDatabaseStmt = 259,
-      T_AlterDatabaseSetStmt = 260,
-      T_AlterRoleSetStmt = 261,
-      T_CreateConversionStmt = 262,
-      T_CreateCastStmt = 263,
-      T_CreateOpClassStmt = 264,
-      T_CreateOpFamilyStmt = 265,
-      T_AlterOpFamilyStmt = 266,
-      T_PrepareStmt = 267,
-      T_ExecuteStmt = 268,
-      T_DeallocateStmt = 269,
-      T_DeclareCursorStmt = 270,
-      T_CreateTableSpaceStmt = 271,
-      T_DropTableSpaceStmt = 272,
-      T_AlterObjectSchemaStmt = 273,
-      T_AlterOwnerStmt = 274,
-      T_DropOwnedStmt = 275,
-      T_ReassignOwnedStmt = 276,
-      T_CompositeTypeStmt = 277,
-      T_CreateEnumStmt = 278,
-      T_CreateRangeStmt = 279,
-      T_AlterEnumStmt = 280,
-      T_AlterTSDictionaryStmt = 281,
-      T_AlterTSConfigurationStmt = 282,
-      T_CreateFdwStmt = 283,
-      T_AlterFdwStmt = 284,
-      T_CreateForeignServerStmt = 285,
-      T_AlterForeignServerStmt = 286,
-      T_CreateUserMappingStmt = 287,
-      T_AlterUserMappingStmt = 288,
-      T_DropUserMappingStmt = 289,
-      T_AlterTableSpaceOptionsStmt = 290,
-      T_AlterTableMoveAllStmt = 291,
-      T_SecLabelStmt = 292,
-      T_CreateForeignTableStmt = 293,
-      T_ImportForeignSchemaStmt = 294,
-      T_CreateExtensionStmt = 295,
-      T_AlterExtensionStmt = 296,
-      T_AlterExtensionContentsStmt = 297,
-      T_CreateEventTrigStmt = 298,
-      T_AlterEventTrigStmt = 299,
-      T_RefreshMatViewStmt = 300,
-      T_ReplicaIdentityStmt = 301,
-      T_AlterSystemStmt = 302,
-      T_CreatePolicyStmt = 303,
-      T_AlterPolicyStmt = 304,
-      T_CreateTransformStmt = 305,
-      T_A_Expr = 306,
-      T_ColumnRef = 307,
-      T_ParamRef = 308,
-      T_A_Const = 309,
-      T_FuncCall = 310,
-      T_A_Star = 311,
-      T_A_Indices = 312,
-      T_A_Indirection = 313,
-      T_A_ArrayExpr = 314,
-      T_ResTarget = 315,
-      T_MultiAssignRef = 316,
-      T_TypeCast = 317,
-      T_CollateClause = 318,
-      T_SortBy = 319,
-      T_WindowDef = 320,
-      T_RangeSubselect = 321,
-      T_RangeFunction = 322,
-      T_RangeTableSample = 323,
-      T_TypeName = 324,
-      T_ColumnDef = 325,
-      T_IndexElem = 326,
-      T_Constraint = 327,
-      T_DefElem = 328,
-      T_RangeTblEntry = 329,
-      T_RangeTblFunction = 330,
-      T_TableSampleClause = 331,
-      T_WithCheckOption = 332,
-      T_SortGroupClause = 333,
-      T_GroupingSet = 334,
-      T_WindowClause = 335,
-      T_FuncWithArgs = 336,
-      T_AccessPriv = 337,
-      T_CreateOpClassItem = 338,
-      T_TableLikeClause = 339,
-      T_FunctionParameter = 340,
-      T_LockingClause = 341,
-      T_RowMarkClause = 342,
-      T_XmlSerialize = 343,
-      T_WithClause = 344,
-      T_InferClause = 345,
-      T_OnConflictClause = 346,
-      T_CommonTableExpr = 347,
-      T_RoleSpec = 348,
-      T_IdentifySystemCmd = 349,
-      T_BaseBackupCmd = 350,
-      T_CreateReplicationSlotCmd = 351,
-      T_DropReplicationSlotCmd = 352,
-      T_StartReplicationCmd = 353,
-      T_TimeLineHistoryCmd = 354,
-      T_TriggerData = 355,
-      T_EventTriggerData = 356,
-      T_ReturnSetInfo = 357,
-      T_WindowObjectData = 358,
-      T_TIDBitmap = 359,
-      T_InlineCodeBlock = 360,
-      T_FdwRoutine = 361,
-      T_TsmRoutine = 362
+      T_ProjectSet = 10,
+      T_ModifyTable = 11,
+      T_Append = 12,
+      T_MergeAppend = 13,
+      T_RecursiveUnion = 14,
+      T_BitmapAnd = 15,
+      T_BitmapOr = 16,
+      T_Scan = 17,
+      T_SeqScan = 18,
+      T_SampleScan = 19,
+      T_IndexScan = 20,
+      T_IndexOnlyScan = 21,
+      T_BitmapIndexScan = 22,
+      T_BitmapHeapScan = 23,
+      T_TidScan = 24,
+      T_SubqueryScan = 25,
+      T_FunctionScan = 26,
+      T_ValuesScan = 27,
+      T_TableFuncScan = 28,
+      T_CteScan = 29,
+      T_NamedTuplestoreScan = 30,
+      T_WorkTableScan = 31,
+      T_ForeignScan = 32,
+      T_CustomScan = 33,
+      T_Join = 34,
+      T_NestLoop = 35,
+      T_MergeJoin = 36,
+      T_HashJoin = 37,
+      T_Material = 38,
+      T_Sort = 39,
+      T_Group = 40,
+      T_Agg = 41,
+      T_WindowAgg = 42,
+      T_Unique = 43,
+      T_Gather = 44,
+      T_GatherMerge = 45,
+      T_Hash = 46,
+      T_SetOp = 47,
+      T_LockRows = 48,
+      T_Limit = 49,
+      T_NestLoopParam = 50,
+      T_PlanRowMark = 51,
+      T_PlanInvalItem = 52,
+      T_PlanState = 53,
+      T_ResultState = 54,
+      T_ProjectSetState = 55,
+      T_ModifyTableState = 56,
+      T_AppendState = 57,
+      T_MergeAppendState = 58,
+      T_RecursiveUnionState = 59,
+      T_BitmapAndState = 60,
+      T_BitmapOrState = 61,
+      T_ScanState = 62,
+      T_SeqScanState = 63,
+      T_SampleScanState = 64,
+      T_IndexScanState = 65,
+      T_IndexOnlyScanState = 66,
+      T_BitmapIndexScanState = 67,
+      T_BitmapHeapScanState = 68,
+      T_TidScanState = 69,
+      T_SubqueryScanState = 70,
+      T_FunctionScanState = 71,
+      T_TableFuncScanState = 72,
+      T_ValuesScanState = 73,
+      T_CteScanState = 74,
+      T_NamedTuplestoreScanState = 75,
+      T_WorkTableScanState = 76,
+      T_ForeignScanState = 77,
+      T_CustomScanState = 78,
+      T_JoinState = 79,
+      T_NestLoopState = 80,
+      T_MergeJoinState = 81,
+      T_HashJoinState = 82,
+      T_MaterialState = 83,
+      T_SortState = 84,
+      T_GroupState = 85,
+      T_AggState = 86,
+      T_WindowAggState = 87,
+      T_UniqueState = 88,
+      T_GatherState = 89,
+      T_GatherMergeState = 90,
+      T_HashState = 91,
+      T_SetOpState = 92,
+      T_LockRowsState = 93,
+      T_LimitState = 94,
+      T_Alias = 95,
+      T_RangeVar = 96,
+      T_TableFunc = 97,
+      T_Expr = 98,
+      T_Var = 99,
+      T_Const = 100,
+      T_Param = 101,
+      T_Aggref = 102,
+      T_GroupingFunc = 103,
+      T_WindowFunc = 104,
+      T_ArrayRef = 105,
+      T_FuncExpr = 106,
+      T_NamedArgExpr = 107,
+      T_OpExpr = 108,
+      T_DistinctExpr = 109,
+      T_NullIfExpr = 110,
+      T_ScalarArrayOpExpr = 111,
+      T_BoolExpr = 112,
+      T_SubLink = 113,
+      T_SubPlan = 114,
+      T_AlternativeSubPlan = 115,
+      T_FieldSelect = 116,
+      T_FieldStore = 117,
+      T_RelabelType = 118,
+      T_CoerceViaIO = 119,
+      T_ArrayCoerceExpr = 120,
+      T_ConvertRowtypeExpr = 121,
+      T_CollateExpr = 122,
+      T_CaseExpr = 123,
+      T_CaseWhen = 124,
+      T_CaseTestExpr = 125,
+      T_ArrayExpr = 126,
+      T_RowExpr = 127,
+      T_RowCompareExpr = 128,
+      T_CoalesceExpr = 129,
+      T_MinMaxExpr = 130,
+      T_SQLValueFunction = 131,
+      T_XmlExpr = 132,
+      T_NullTest = 133,
+      T_BooleanTest = 134,
+      T_CoerceToDomain = 135,
+      T_CoerceToDomainValue = 136,
+      T_SetToDefault = 137,
+      T_CurrentOfExpr = 138,
+      T_NextValueExpr = 139,
+      T_InferenceElem = 140,
+      T_TargetEntry = 141,
+      T_RangeTblRef = 142,
+      T_JoinExpr = 143,
+      T_FromExpr = 144,
+      T_OnConflictExpr = 145,
+      T_IntoClause = 146,
+      T_ExprState = 147,
+      T_AggrefExprState = 148,
+      T_WindowFuncExprState = 149,
+      T_SetExprState = 150,
+      T_SubPlanState = 151,
+      T_AlternativeSubPlanState = 152,
+      T_DomainConstraintState = 153,
+      T_PlannerInfo = 154,
+      T_PlannerGlobal = 155,
+      T_RelOptInfo = 156,
+      T_IndexOptInfo = 157,
+      T_ForeignKeyOptInfo = 158,
+      T_ParamPathInfo = 159,
+      T_Path = 160,
+      T_IndexPath = 161,
+      T_BitmapHeapPath = 162,
+      T_BitmapAndPath = 163,
+      T_BitmapOrPath = 164,
+      T_TidPath = 165,
+      T_SubqueryScanPath = 166,
+      T_ForeignPath = 167,
+      T_CustomPath = 168,
+      T_NestPath = 169,
+      T_MergePath = 170,
+      T_HashPath = 171,
+      T_AppendPath = 172,
+      T_MergeAppendPath = 173,
+      T_ResultPath = 174,
+      T_MaterialPath = 175,
+      T_UniquePath = 176,
+      T_GatherPath = 177,
+      T_GatherMergePath = 178,
+      T_ProjectionPath = 179,
+      T_ProjectSetPath = 180,
+      T_SortPath = 181,
+      T_GroupPath = 182,
+      T_UpperUniquePath = 183,
+      T_AggPath = 184,
+      T_GroupingSetsPath = 185,
+      T_MinMaxAggPath = 186,
+      T_WindowAggPath = 187,
+      T_SetOpPath = 188,
+      T_RecursiveUnionPath = 189,
+      T_LockRowsPath = 190,
+      T_ModifyTablePath = 191,
+      T_LimitPath = 192,
+      T_EquivalenceClass = 193,
+      T_EquivalenceMember = 194,
+      T_PathKey = 195,
+      T_PathTarget = 196,
+      T_RestrictInfo = 197,
+      T_PlaceHolderVar = 198,
+      T_SpecialJoinInfo = 199,
+      T_AppendRelInfo = 200,
+      T_PartitionedChildRelInfo = 201,
+      T_PlaceHolderInfo = 202,
+      T_MinMaxAggInfo = 203,
+      T_PlannerParamItem = 204,
+      T_RollupData = 205,
+      T_GroupingSetData = 206,
+      T_StatisticExtInfo = 207,
+      T_MemoryContext = 208,
+      T_AllocSetContext = 209,
+      T_SlabContext = 210,
+      T_Value = 211,
+      T_Integer = 212,
+      T_Float = 213,
+      T_String = 214,
+      T_BitString = 215,
+      T_Null = 216,
+      T_List = 217,
+      T_IntList = 218,
+      T_OidList = 219,
+      T_ExtensibleNode = 220,
+      T_RawStmt = 221,
+      T_Query = 222,
+      T_PlannedStmt = 223,
+      T_InsertStmt = 224,
+      T_DeleteStmt = 225,
+      T_UpdateStmt = 226,
+      T_SelectStmt = 227,
+      T_AlterTableStmt = 228,
+      T_AlterTableCmd = 229,
+      T_AlterDomainStmt = 230,
+      T_SetOperationStmt = 231,
+      T_GrantStmt = 232,
+      T_GrantRoleStmt = 233,
+      T_AlterDefaultPrivilegesStmt = 234,
+      T_ClosePortalStmt = 235,
+      T_ClusterStmt = 236,
+      T_CopyStmt = 237,
+      T_CreateStmt = 238,
+      T_DefineStmt = 239,
+      T_DropStmt = 240,
+      T_TruncateStmt = 241,
+      T_CommentStmt = 242,
+      T_FetchStmt = 243,
+      T_IndexStmt = 244,
+      T_CreateFunctionStmt = 245,
+      T_AlterFunctionStmt = 246,
+      T_DoStmt = 247,
+      T_RenameStmt = 248,
+      T_RuleStmt = 249,
+      T_NotifyStmt = 250,
+      T_ListenStmt = 251,
+      T_UnlistenStmt = 252,
+      T_TransactionStmt = 253,
+      T_ViewStmt = 254,
+      T_LoadStmt = 255,
+      T_CreateDomainStmt = 256,
+      T_CreatedbStmt = 257,
+      T_DropdbStmt = 258,
+      T_VacuumStmt = 259,
+      T_ExplainStmt = 260,
+      T_CreateTableAsStmt = 261,
+      T_CreateSeqStmt = 262,
+      T_AlterSeqStmt = 263,
+      T_VariableSetStmt = 264,
+      T_VariableShowStmt = 265,
+      T_DiscardStmt = 266,
+      T_CreateTrigStmt = 267,
+      T_CreatePLangStmt = 268,
+      T_CreateRoleStmt = 269,
+      T_AlterRoleStmt = 270,
+      T_DropRoleStmt = 271,
+      T_LockStmt = 272,
+      T_ConstraintsSetStmt = 273,
+      T_ReindexStmt = 274,
+      T_CheckPointStmt = 275,
+      T_CreateSchemaStmt = 276,
+      T_AlterDatabaseStmt = 277,
+      T_AlterDatabaseSetStmt = 278,
+      T_AlterRoleSetStmt = 279,
+      T_CreateConversionStmt = 280,
+      T_CreateCastStmt = 281,
+      T_CreateOpClassStmt = 282,
+      T_CreateOpFamilyStmt = 283,
+      T_AlterOpFamilyStmt = 284,
+      T_PrepareStmt = 285,
+      T_ExecuteStmt = 286,
+      T_DeallocateStmt = 287,
+      T_DeclareCursorStmt = 288,
+      T_CreateTableSpaceStmt = 289,
+      T_DropTableSpaceStmt = 290,
+      T_AlterObjectDependsStmt = 291,
+      T_AlterObjectSchemaStmt = 292,
+      T_AlterOwnerStmt = 293,
+      T_AlterOperatorStmt = 294,
+      T_DropOwnedStmt = 295,
+      T_ReassignOwnedStmt = 296,
+      T_CompositeTypeStmt = 297,
+      T_CreateEnumStmt = 298,
+      T_CreateRangeStmt = 299,
+      T_AlterEnumStmt = 300,
+      T_AlterTSDictionaryStmt = 301,
+      T_AlterTSConfigurationStmt = 302,
+      T_CreateFdwStmt = 303,
+      T_AlterFdwStmt = 304,
+      T_CreateForeignServerStmt = 305,
+      T_AlterForeignServerStmt = 306,
+      T_CreateUserMappingStmt = 307,
+      T_AlterUserMappingStmt = 308,
+      T_DropUserMappingStmt = 309,
+      T_AlterTableSpaceOptionsStmt = 310,
+      T_AlterTableMoveAllStmt = 311,
+      T_SecLabelStmt = 312,
+      T_CreateForeignTableStmt = 313,
+      T_ImportForeignSchemaStmt = 314,
+      T_CreateExtensionStmt = 315,
+      T_AlterExtensionStmt = 316,
+      T_AlterExtensionContentsStmt = 317,
+      T_CreateEventTrigStmt = 318,
+      T_AlterEventTrigStmt = 319,
+      T_RefreshMatViewStmt = 320,
+      T_ReplicaIdentityStmt = 321,
+      T_AlterSystemStmt = 322,
+      T_CreatePolicyStmt = 323,
+      T_AlterPolicyStmt = 324,
+      T_CreateTransformStmt = 325,
+      T_CreateAmStmt = 326,
+      T_CreatePublicationStmt = 327,
+      T_AlterPublicationStmt = 328,
+      T_CreateSubscriptionStmt = 329,
+      T_AlterSubscriptionStmt = 330,
+      T_DropSubscriptionStmt = 331,
+      T_CreateStatsStmt = 332,
+      T_AlterCollationStmt = 333,
+      T_A_Expr = 334,
+      T_ColumnRef = 335,
+      T_ParamRef = 336,
+      T_A_Const = 337,
+      T_FuncCall = 338,
+      T_A_Star = 339,
+      T_A_Indices = 340,
+      T_A_Indirection = 341,
+      T_A_ArrayExpr = 342,
+      T_ResTarget = 343,
+      T_MultiAssignRef = 344,
+      T_TypeCast = 345,
+      T_CollateClause = 346,
+      T_SortBy = 347,
+      T_WindowDef = 348,
+      T_RangeSubselect = 349,
+      T_RangeFunction = 350,
+      T_RangeTableSample = 351,
+      T_RangeTableFunc = 352,
+      T_RangeTableFuncCol = 353,
+      T_TypeName = 354,
+      T_ColumnDef = 355,
+      T_IndexElem = 356,
+      T_Constraint = 357,
+      T_DefElem = 358,
+      T_RangeTblEntry = 359,
+      T_RangeTblFunction = 360,
+      T_TableSampleClause = 361,
+      T_WithCheckOption = 362,
+      T_SortGroupClause = 363,
+      T_GroupingSet = 364,
+      T_WindowClause = 365,
+      T_ObjectWithArgs = 366,
+      T_AccessPriv = 367,
+      T_CreateOpClassItem = 368,
+      T_TableLikeClause = 369,
+      T_FunctionParameter = 370,
+      T_LockingClause = 371,
+      T_RowMarkClause = 372,
+      T_XmlSerialize = 373,
+      T_WithClause = 374,
+      T_InferClause = 375,
+      T_OnConflictClause = 376,
+      T_CommonTableExpr = 377,
+      T_RoleSpec = 378,
+      T_TriggerTransition = 379,
+      T_PartitionElem = 380,
+      T_PartitionSpec = 381,
+      T_PartitionBoundSpec = 382,
+      T_PartitionRangeDatum = 383,
+      T_PartitionCmd = 384,
+      T_IdentifySystemCmd = 385,
+      T_BaseBackupCmd = 386,
+      T_CreateReplicationSlotCmd = 387,
+      T_DropReplicationSlotCmd = 388,
+      T_StartReplicationCmd = 389,
+      T_TimeLineHistoryCmd = 390,
+      T_SQLCmd = 391,
+      T_TriggerData = 392,
+      T_EventTriggerData = 393,
+      T_ReturnSetInfo = 394,
+      T_WindowObjectData = 395,
+      T_TIDBitmap = 396,
+      T_InlineCodeBlock = 397,
+      T_FdwRoutine = 398,
+      T_IndexAmRoutine = 399,
+      T_TsmRoutine = 400,
+      T_ForeignKeyCacheInfo = 401
   }
   /*
    * CmdType -
@@ -434,6 +473,41 @@ declare module "pg-query-native" {
       JOIN_UNIQUE_INNER = 7
   }
   /*
+   * AggStrategy -
+   *	  overall execution strategies for Agg plan nodes
+   *
+   * This is needed in both plannodes.h and relation.h, so put it here...
+   */
+  const enum PgAggStrategy {
+      AGG_PLAIN = 0,
+      AGG_SORTED = 1,
+      AGG_HASHED = 2,
+      AGG_MIXED = 3
+  }
+  /* Supported operating modes (i.e., useful combinations of these options): */
+  const enum PgAggSplit {
+      AGGSPLIT_SIMPLE = 0,
+      AGGSPLIT_INITIAL_SERIAL = 1,
+      AGGSPLIT_FINAL_DESERIAL = 2
+  }
+  /*
+   * SetOpCmd and SetOpStrategy -
+   *	  overall semantics and execution strategies for SetOp plan nodes
+   *
+   * This is needed in both plannodes.h and relation.h, so put it here...
+   */
+  const enum PgSetOpCmd {
+      SETOPCMD_INTERSECT = 0,
+      SETOPCMD_INTERSECT_ALL = 1,
+      SETOPCMD_EXCEPT = 2,
+      SETOPCMD_EXCEPT_ALL = 3
+  }
+  /**/
+  const enum PgSetOpStrategy {
+      SETOP_SORTED = 0,
+      SETOP_HASHED = 1
+  }
+  /*
    * OnConflictAction -
    *	  "ON CONFLICT" clause type of query
    *
@@ -443,12 +517,6 @@ declare module "pg-query-native" {
       ONCONFLICT_NONE = 0,
       ONCONFLICT_NOTHING = 1,
       ONCONFLICT_UPDATE = 2
-  }
-  /**/
-  const enum PgInhOption {
-      INH_NO = 0,
-      INH_YES = 1,
-      INH_DEFAULT = 2
   }
   /* What to do at commit time for temporary relations */
   const enum PgOnCommitAction {
@@ -617,6 +685,34 @@ declare module "pg-query-native" {
       IS_LEAST = 1
   }
   /*
+   * SQLValueFunction - parameterless functions with special grammar productions
+   *
+   * The SQL standard categorizes some of these as <datetime value function>
+   * and others as <general value specification>.  We call 'em SQLValueFunctions
+   * for lack of a better term.  We store type and typmod of the result so that
+   * some code doesn't need to know each function individually, and because
+   * we would need to store typmod anyway for some of the datetime functions.
+   * Note that currently, all variants return non-collating datatypes, so we do
+   * not need a collation field; also, all these functions are stable.
+   */
+  const enum PgSQLValueFunctionOp {
+      SVFOP_CURRENT_DATE = 0,
+      SVFOP_CURRENT_TIME = 1,
+      SVFOP_CURRENT_TIME_N = 2,
+      SVFOP_CURRENT_TIMESTAMP = 3,
+      SVFOP_CURRENT_TIMESTAMP_N = 4,
+      SVFOP_LOCALTIME = 5,
+      SVFOP_LOCALTIME_N = 6,
+      SVFOP_LOCALTIMESTAMP = 7,
+      SVFOP_LOCALTIMESTAMP_N = 8,
+      SVFOP_CURRENT_ROLE = 9,
+      SVFOP_CURRENT_USER = 10,
+      SVFOP_USER = 11,
+      SVFOP_SESSION_USER = 12,
+      SVFOP_CURRENT_CATALOG = 13,
+      SVFOP_CURRENT_SCHEMA = 14
+  }
+  /*
    * XmlExpr - various SQL/XML functions requiring special grammar productions
    *
    * 'name' carries the "NAME foo" argument (already XML-escaped).
@@ -648,8 +744,16 @@ declare module "pg-query-native" {
    * NullTest represents the operation of testing a value for NULLness.
    * The appropriate test is performed and returned as a boolean Datum.
    *
-   * NOTE: the semantics of this for rowtype inputs are noticeably different
-   * from the scalar case.  We provide an "argisrow" flag to reflect that.
+   * When argisrow is false, this simply represents a test for the null value.
+   *
+   * When argisrow is true, the input expression must yield a rowtype, and
+   * the node implements "row IS [NOT] NULL" per the SQL standard.  This
+   * includes checking individual fields for NULLness when the row datum
+   * itself isn't NULL.
+   *
+   * NOTE: the combination of a rowtype input and argisrow==false does NOT
+   * correspond to the SQL notation "row IS [NOT] NULL"; instead, this case
+   * represents the SQL notation "row IS [NOT] DISTINCT FROM NULL".
    * ----------------
    */
   const enum PgNullTestType {
@@ -667,6 +771,32 @@ declare module "pg-query-native" {
   const enum PgBoolTestType {
       IS_TRUE = 0,
       IS_NOT_TRUE = 1
+  }
+  /*-------------------------------------------------------------------------
+   *
+   * parsenodes.h
+   *	  definitions for parse tree nodes
+   *
+   * Many of the node types used in parsetrees include a "location" field.
+   * This is a byte (not character) offset in the original source text, to be
+   * used for positioning an error cursor when there is an error related to
+   * the node.  Access to the original source text is needed to make use of
+   * the location.  At the topmost (statement) level, we also provide a
+   * statement length, likewise measured in bytes, for convenience in
+   * identifying statement boundaries in multi-statement source strings.
+   *
+   *
+   * Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+   * Portions Copyright (c) 1994, Regents of the University of California
+   *
+   * src/include/nodes/parsenodes.h
+   *
+   *-------------------------------------------------------------------------
+   */
+  const enum PgOverridingKind {
+      OVERRIDING_NOT_SET = 0,
+      OVERRIDING_USER_VALUE = 1,
+      OVERRIDING_SYSTEM_VALUE = 2
   }
   /* Possible sources of a Query */
   const enum PgQuerySource {
@@ -697,17 +827,18 @@ declare module "pg-query-native" {
       AEXPR_OP_ANY = 1,
       AEXPR_OP_ALL = 2,
       AEXPR_DISTINCT = 3,
-      AEXPR_NULLIF = 4,
-      AEXPR_OF = 5,
-      AEXPR_IN = 6,
-      AEXPR_LIKE = 7,
-      AEXPR_ILIKE = 8,
-      AEXPR_SIMILAR = 9,
-      AEXPR_BETWEEN = 10,
-      AEXPR_NOT_BETWEEN = 11,
-      AEXPR_BETWEEN_SYM = 12,
-      AEXPR_NOT_BETWEEN_SYM = 13,
-      AEXPR_PAREN = 14
+      AEXPR_NOT_DISTINCT = 4,
+      AEXPR_NULLIF = 5,
+      AEXPR_OF = 6,
+      AEXPR_IN = 7,
+      AEXPR_LIKE = 8,
+      AEXPR_ILIKE = 9,
+      AEXPR_SIMILAR = 10,
+      AEXPR_BETWEEN = 11,
+      AEXPR_NOT_BETWEEN = 12,
+      AEXPR_BETWEEN_SYM = 13,
+      AEXPR_NOT_BETWEEN_SYM = 14,
+      AEXPR_PAREN = 15
   }
   /*
    * RoleSpec - a role name or one of a few special values.
@@ -722,10 +853,11 @@ declare module "pg-query-native" {
   const enum PgTableLikeOption {
       CREATE_TABLE_LIKE_DEFAULTS = 0,
       CREATE_TABLE_LIKE_CONSTRAINTS = 1,
-      CREATE_TABLE_LIKE_INDEXES = 2,
-      CREATE_TABLE_LIKE_STORAGE = 3,
-      CREATE_TABLE_LIKE_COMMENTS = 4,
-      CREATE_TABLE_LIKE_ALL = 5
+      CREATE_TABLE_LIKE_IDENTITY = 2,
+      CREATE_TABLE_LIKE_INDEXES = 3,
+      CREATE_TABLE_LIKE_STORAGE = 4,
+      CREATE_TABLE_LIKE_COMMENTS = 5,
+      CREATE_TABLE_LIKE_ALL = 6
   }
   /*
    * DefElem - a generic "name = value" option definition
@@ -742,6 +874,16 @@ declare module "pg-query-native" {
       DEFELEM_SET = 1,
       DEFELEM_ADD = 2,
       DEFELEM_DROP = 3
+  }
+  /*
+   * PartitionRangeDatum - one of the values in a range partition bound
+   *
+   * This can be MINVALUE, MAXVALUE or a specific bounded value.
+   */
+  const enum PgPartitionRangeDatumKind {
+      PARTITION_RANGE_DATUM_MINVALUE = 0,
+      PARTITION_RANGE_DATUM_VALUE = 1,
+      PARTITION_RANGE_DATUM_MAXVALUE = 2
   }
   /*--------------------
    * RangeTblEntry -
@@ -814,6 +956,13 @@ declare module "pg-query-native" {
    *	  FirstLowInvalidHeapAttributeNumber from column numbers before storing
    *	  them in these fields.  A whole-row Var reference is represented by
    *	  setting the bit for InvalidAttrNumber.
+   *
+   *	  securityQuals is a list of security barrier quals (boolean expressions),
+   *	  to be tested in the listed order before returning a row from the
+   *	  relation.  It is always NIL in parser output.  Entries are added by the
+   *	  rewriter to implement security-barrier views and/or row-level security.
+   *	  Note that the planner turns each boolean expression into an implicitly
+   *	  AND'ed sublist, as is its usual habit with qualification expressions.
    *--------------------
    */
   const enum PgRTEKind {
@@ -821,8 +970,10 @@ declare module "pg-query-native" {
       RTE_SUBQUERY = 1,
       RTE_JOIN = 2,
       RTE_FUNCTION = 3,
-      RTE_VALUES = 4,
-      RTE_CTE = 5
+      RTE_TABLEFUNC = 4,
+      RTE_VALUES = 5,
+      RTE_CTE = 6,
+      RTE_NAMEDTUPLESTORE = 7
   }
   /*
    * WithCheckOption -
@@ -918,49 +1069,54 @@ declare module "pg-query-native" {
    * object type.  Note that commands typically don't support all the types.
    */
   const enum PgObjectType {
-      OBJECT_AGGREGATE = 0,
-      OBJECT_AMOP = 1,
-      OBJECT_AMPROC = 2,
-      OBJECT_ATTRIBUTE = 3,
-      OBJECT_CAST = 4,
-      OBJECT_COLUMN = 5,
-      OBJECT_COLLATION = 6,
-      OBJECT_CONVERSION = 7,
-      OBJECT_DATABASE = 8,
-      OBJECT_DEFAULT = 9,
-      OBJECT_DEFACL = 10,
-      OBJECT_DOMAIN = 11,
-      OBJECT_DOMCONSTRAINT = 12,
-      OBJECT_EVENT_TRIGGER = 13,
-      OBJECT_EXTENSION = 14,
-      OBJECT_FDW = 15,
-      OBJECT_FOREIGN_SERVER = 16,
-      OBJECT_FOREIGN_TABLE = 17,
-      OBJECT_FUNCTION = 18,
-      OBJECT_INDEX = 19,
-      OBJECT_LANGUAGE = 20,
-      OBJECT_LARGEOBJECT = 21,
-      OBJECT_MATVIEW = 22,
-      OBJECT_OPCLASS = 23,
-      OBJECT_OPERATOR = 24,
-      OBJECT_OPFAMILY = 25,
-      OBJECT_POLICY = 26,
-      OBJECT_ROLE = 27,
-      OBJECT_RULE = 28,
-      OBJECT_SCHEMA = 29,
-      OBJECT_SEQUENCE = 30,
-      OBJECT_TABCONSTRAINT = 31,
-      OBJECT_TABLE = 32,
-      OBJECT_TABLESPACE = 33,
-      OBJECT_TRANSFORM = 34,
-      OBJECT_TRIGGER = 35,
-      OBJECT_TSCONFIGURATION = 36,
-      OBJECT_TSDICTIONARY = 37,
-      OBJECT_TSPARSER = 38,
-      OBJECT_TSTEMPLATE = 39,
-      OBJECT_TYPE = 40,
-      OBJECT_USER_MAPPING = 41,
-      OBJECT_VIEW = 42
+      OBJECT_ACCESS_METHOD = 0,
+      OBJECT_AGGREGATE = 1,
+      OBJECT_AMOP = 2,
+      OBJECT_AMPROC = 3,
+      OBJECT_ATTRIBUTE = 4,
+      OBJECT_CAST = 5,
+      OBJECT_COLUMN = 6,
+      OBJECT_COLLATION = 7,
+      OBJECT_CONVERSION = 8,
+      OBJECT_DATABASE = 9,
+      OBJECT_DEFAULT = 10,
+      OBJECT_DEFACL = 11,
+      OBJECT_DOMAIN = 12,
+      OBJECT_DOMCONSTRAINT = 13,
+      OBJECT_EVENT_TRIGGER = 14,
+      OBJECT_EXTENSION = 15,
+      OBJECT_FDW = 16,
+      OBJECT_FOREIGN_SERVER = 17,
+      OBJECT_FOREIGN_TABLE = 18,
+      OBJECT_FUNCTION = 19,
+      OBJECT_INDEX = 20,
+      OBJECT_LANGUAGE = 21,
+      OBJECT_LARGEOBJECT = 22,
+      OBJECT_MATVIEW = 23,
+      OBJECT_OPCLASS = 24,
+      OBJECT_OPERATOR = 25,
+      OBJECT_OPFAMILY = 26,
+      OBJECT_POLICY = 27,
+      OBJECT_PUBLICATION = 28,
+      OBJECT_PUBLICATION_REL = 29,
+      OBJECT_ROLE = 30,
+      OBJECT_RULE = 31,
+      OBJECT_SCHEMA = 32,
+      OBJECT_SEQUENCE = 33,
+      OBJECT_SUBSCRIPTION = 34,
+      OBJECT_STATISTIC_EXT = 35,
+      OBJECT_TABCONSTRAINT = 36,
+      OBJECT_TABLE = 37,
+      OBJECT_TABLESPACE = 38,
+      OBJECT_TRANSFORM = 39,
+      OBJECT_TRIGGER = 40,
+      OBJECT_TSCONFIGURATION = 41,
+      OBJECT_TSDICTIONARY = 42,
+      OBJECT_TSPARSER = 43,
+      OBJECT_TSTEMPLATE = 44,
+      OBJECT_TYPE = 45,
+      OBJECT_USER_MAPPING = 46,
+      OBJECT_VIEW = 47
   }
   /**/
   const enum PgDropBehavior {
@@ -1029,7 +1185,12 @@ declare module "pg-query-native" {
       AT_DisableRowSecurity = 57,
       AT_ForceRowSecurity = 58,
       AT_NoForceRowSecurity = 59,
-      AT_GenericOptions = 60
+      AT_GenericOptions = 60,
+      AT_AttachPartition = 61,
+      AT_DetachPartition = 62,
+      AT_AddIdentity = 63,
+      AT_SetIdentity = 64,
+      AT_DropIdentity = 65
   }
   /* ----------------------
    *		Grant|Revoke Statement
@@ -1105,15 +1266,16 @@ declare module "pg-query-native" {
       CONSTR_NULL = 0,
       CONSTR_NOTNULL = 1,
       CONSTR_DEFAULT = 2,
-      CONSTR_CHECK = 3,
-      CONSTR_PRIMARY = 4,
-      CONSTR_UNIQUE = 5,
-      CONSTR_EXCLUSION = 6,
-      CONSTR_FOREIGN = 7,
-      CONSTR_ATTR_DEFERRABLE = 8,
-      CONSTR_ATTR_NOT_DEFERRABLE = 9,
-      CONSTR_ATTR_DEFERRED = 10,
-      CONSTR_ATTR_IMMEDIATE = 11
+      CONSTR_IDENTITY = 3,
+      CONSTR_CHECK = 4,
+      CONSTR_PRIMARY = 5,
+      CONSTR_UNIQUE = 6,
+      CONSTR_EXCLUSION = 7,
+      CONSTR_FOREIGN = 8,
+      CONSTR_ATTR_DEFERRABLE = 9,
+      CONSTR_ATTR_NOT_DEFERRABLE = 10,
+      CONSTR_ATTR_DEFERRED = 11,
+      CONSTR_ATTR_IMMEDIATE = 12
   }
   /* ----------------------
    *		Import Foreign Schema Statement
@@ -1196,7 +1358,8 @@ declare module "pg-query-native" {
       VACOPT_FREEZE = 3,
       VACOPT_FULL = 4,
       VACOPT_NOWAIT = 5,
-      VACOPT_SKIPTOAST = 6
+      VACOPT_SKIPTOAST = 6,
+      VACOPT_DISABLE_PAGE_SKIPPING = 7
   }
   /* ----------------------
    * Discard Statement
@@ -1225,6 +1388,14 @@ declare module "pg-query-native" {
       ALTER_TSCONFIG_REPLACE_DICT = 2,
       ALTER_TSCONFIG_REPLACE_DICT_FOR_TOKEN = 3,
       ALTER_TSCONFIG_DROP_MAPPING = 4
+  }
+  /**/
+  const enum PgAlterSubscriptionType {
+      ALTER_SUBSCRIPTION_OPTIONS = 0,
+      ALTER_SUBSCRIPTION_CONNECTION = 1,
+      ALTER_SUBSCRIPTION_PUBLICATION = 2,
+      ALTER_SUBSCRIPTION_REFRESH = 3,
+      ALTER_SUBSCRIPTION_ENABLED = 4
   }
 
   /**/
@@ -1282,7 +1453,7 @@ declare module "pg-query-native" {
    * RangeVar - range variable, used in FROM clauses
    *
    * Also used to represent table names in utility statements; there, the alias
-   * field is not used, and inhOpt shows whether to apply the operation
+   * field is not used, and inh tells whether to apply the operation
    * recursively to child tables.  In some contexts it is also useful to carry
    * a TEMP table indication here.
    */
@@ -1297,11 +1468,44 @@ declare module "pg-query-native" {
       /* expand rel by inheritance? recursively act
       								 * on children? */
 
-      inhOpt: PgInhOption;
+      inh: boolean;
       /* see RELPERSISTENCE_* in pg_class.h */
       relpersistence: string;
       /* table alias & optional column aliases */
       alias?: PgAlias;
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
+   * TableFunc - node for a table function, such as XMLTABLE.
+   */
+  interface PgTableFunc extends PgNode {
+    TableFunc: {
+      /* list of namespace uri */
+      ns_uris?: PgNode[];
+      /* list of namespace names */
+      ns_names?: PgNode[];
+      /* input document expression */
+      docexpr?: PgNode;
+      /* row filter expression */
+      rowexpr?: PgNode;
+      /* column names (list of String) */
+      colnames?: PgNode[];
+      /* OID list of column type OIDs */
+      coltypes?: PgNode[];
+      /* integer list of column typmods */
+      coltypmods?: PgNode[];
+      /* OID list of column collation OIDs */
+      colcollations?: PgNode[];
+      /* list of column filter expressions */
+      colexprs?: PgNode[];
+      /* list of column default expressions */
+      coldefexprs?: PgNode[];
+      /* nullability flag for each output column */
+      notnulls?: any;
+      /* counts from 0; -1 if none specified */
+      ordinalitycol: number;
       /* token location, or -1 if unknown */
       location: number;
     }
@@ -1479,6 +1683,23 @@ declare module "pg-query-native" {
    * DISTINCT is not supported in this case, so aggdistinct will be NIL.
    * The direct arguments appear in aggdirectargs (as a list of plain
    * expressions, not TargetEntry nodes).
+   *
+   * aggtranstype is the data type of the state transition values for this
+   * aggregate (resolved to an actual type, if agg's transtype is polymorphic).
+   * This is determined during planning and is InvalidOid before that.
+   *
+   * aggargtypes is an OID list of the data types of the direct and regular
+   * arguments.  Normally it's redundant with the aggdirectargs and args lists,
+   * but in a combining aggregate, it's not because the args list has been
+   * replaced with a single argument representing the partial-aggregate
+   * transition values.
+   *
+   * aggsplit indicates the expected partial-aggregation mode for the Aggref's
+   * parent plan node.  It's always set to AGGSPLIT_SIMPLE in the parser, but
+   * the planner might change it to something else.  We use this mainly as
+   * a crosscheck that the Aggrefs match the plan; but note that when aggsplit
+   * indicates a non-final mode, aggtype reflects the transition data type
+   * not the SQL-level output type of the aggregate.
    */
   interface PgAggref extends PgNode {
     Aggref: {
@@ -1492,6 +1713,10 @@ declare module "pg-query-native" {
       aggcollid: number;
       /* OID of collation that function should use */
       inputcollid: number;
+      /* type Oid of aggregate's transition value */
+      aggtranstype: number;
+      /* type Oids of direct and aggregated args */
+      aggargtypes?: PgNode[];
       /* direct arguments, if an ordered-set agg */
       aggdirectargs?: PgNode[];
       /* aggregated arguments and sort expressions */
@@ -1512,6 +1737,8 @@ declare module "pg-query-native" {
       aggkind: string;
       /* > 0 if agg belongs to outer query */
       agglevelsup: number;
+      /* expected agg-splitting mode of parent Agg */
+      aggsplit: PgAggSplit;
       /* token location, or -1 if unknown */
       location: number;
     }
@@ -1604,6 +1831,9 @@ declare module "pg-query-native" {
    * reflowerindexpr must be the same length as refupperindexpr when it
    * is not NIL.
    *
+   * In the slice case, individual expressions in the subscript lists can be
+   * NULL, meaning "substitute the array's current lower or upper bound".
+   *
    * Note: the result datatype is the element type when fetching a single
    * element; but it is the array type when doing subarray fetch or either
    * type of store.
@@ -1625,12 +1855,13 @@ declare module "pg-query-native" {
       reftypmod: number;
       /* OID of collation, or InvalidOid if none */
       refcollid: number;
-      /* expressions that evaluate to upper array
-      								 * indexes */
+      /* expressions that evaluate to upper
+      									 * array indexes */
 
       refupperindexpr?: PgNode[];
-      /* expressions that evaluate to lower array
-      								 * indexes */
+      /* expressions that evaluate to lower
+      									 * array indexes, or NIL for single array
+      									 * element */
 
       reflowerindexpr?: PgNode[];
       /* the expression that evaluates to an array
@@ -1897,8 +2128,8 @@ declare module "pg-query-native" {
       firstColType: number;
       /* Typmod of first column of subplan result */
       firstColTypmod: number;
-      /* Collation of first column of
-      										 * subplan result */
+      /* Collation of first column of subplan
+      									 * result */
 
       firstColCollation: number;
       /* TRUE to store subselect output in a hash
@@ -1910,6 +2141,8 @@ declare module "pg-query-native" {
       								 * simpler handling of null values */
 
       unknownEqFalse: boolean;
+      /* is the subplan parallel-safe? */
+      parallel_safe: boolean;
       /* initplan subqueries have to set these
       								 * Params for parent plan */
 
@@ -2336,6 +2569,19 @@ declare module "pg-query-native" {
     }
   }
   /**/
+  interface PgSQLValueFunction extends PgNode {
+    SQLValueFunction: {
+      /**/
+      xpr: PgExpr;
+      /* which function this is */
+      op: PgSQLValueFunctionOp;
+      /**/
+      typmod: number;
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /**/
   interface PgXmlExpr extends PgNode {
     XmlExpr: {
       /**/
@@ -2364,8 +2610,16 @@ declare module "pg-query-native" {
    * NullTest represents the operation of testing a value for NULLness.
    * The appropriate test is performed and returned as a boolean Datum.
    *
-   * NOTE: the semantics of this for rowtype inputs are noticeably different
-   * from the scalar case.  We provide an "argisrow" flag to reflect that.
+   * When argisrow is false, this simply represents a test for the null value.
+   *
+   * When argisrow is true, the input expression must yield a rowtype, and
+   * the node implements "row IS [NOT] NULL" per the SQL standard.  This
+   * includes checking individual fields for NULLness when the row datum
+   * itself isn't NULL.
+   *
+   * NOTE: the combination of a rowtype input and argisrow==false does NOT
+   * correspond to the SQL notation "row IS [NOT] NULL"; instead, this case
+   * represents the SQL notation "row IS [NOT] DISTINCT FROM NULL".
    * ----------------
    */
   interface PgNullTest extends PgNode {
@@ -2376,7 +2630,7 @@ declare module "pg-query-native" {
       arg?: PgExpr;
       /* IS NULL, IS NOT NULL */
       nulltesttype: PgNullTestType;
-      /* T if input is of a composite type */
+      /* T to perform field-by-field null checks */
       argisrow: boolean;
       /* token location, or -1 if unknown */
       location: number;
@@ -2498,6 +2752,23 @@ declare module "pg-query-native" {
     }
   }
   /*
+   * NextValueExpr - get next value from sequence
+   *
+   * This has the same effect as calling the nextval() function, but it does not
+   * check permissions on the sequence.  This is used for identity columns,
+   * where the sequence is an implicit dependency without its own permissions.
+   */
+  interface PgNextValueExpr extends PgNode {
+    NextValueExpr: {
+      /**/
+      xpr: PgExpr;
+      /**/
+      seqid: number;
+      /**/
+      typeId: number;
+    }
+  }
+  /*
    * InferenceElem - an element of a unique index inference specification
    *
    * This mostly matches the structure of IndexElems, but having a dedicated
@@ -2581,7 +2852,7 @@ declare module "pg-query-native" {
       /* name of the column (could be NULL) */
       resname?: string;
       /* nonzero if referenced by a sort/group
-      								 * clause */
+      									 * clause */
 
       ressortgroupref: number;
       /* OID of column's source table */
@@ -2704,9 +2975,7 @@ declare module "pg-query-native" {
    *	  for further processing by the rewriter and planner.
    *
    *	  Utility statements (i.e. non-optimizable statements) have the
-   *	  utilityStmt field set, and the Query itself is mostly dummy.
-   *	  DECLARE CURSOR is a special case: it is represented like a SELECT,
-   *	  but the original DeclareCursorStmt is stored in utilityStmt.
+   *	  utilityStmt field set, and the rest of the Query is mostly dummy.
    *
    *	  Planning converts a Query tree into a Plan tree headed by a PlannedStmt
    *	  node --- the Query structure is not used by the executor.
@@ -2721,9 +2990,7 @@ declare module "pg-query-native" {
       queryId: number;
       /* do I set the command result tag? */
       canSetTag: boolean;
-      /* non-null if this is DECLARE CURSOR or a
-      								 * non-optimizable statement */
-
+      /* non-null if commandType == CMD_UTILITY */
       utilityStmt?: PgNode;
       /* rtable index of target relation for
       								 * INSERT/UPDATE/DELETE; 0 for SELECT */
@@ -2733,6 +3000,8 @@ declare module "pg-query-native" {
       hasAggs: boolean;
       /* has window functions in tlist */
       hasWindowFuncs: boolean;
+      /* has set-returning functions in tlist */
+      hasTargetSRFs: boolean;
       /* has subquery SubLink */
       hasSubLinks: boolean;
       /* distinctClause is from DISTINCT ON */
@@ -2743,7 +3012,7 @@ declare module "pg-query-native" {
       hasModifyingCTE: boolean;
       /* FOR [KEY] UPDATE/SHARE was specified */
       hasForUpdate: boolean;
-      /* row security applied? */
+      /* rewriter has applied some RLS policy */
       hasRowSecurity: boolean;
       /* WITH list (of CommonTableExpr's) */
       cteList?: PgNode[];
@@ -2753,6 +3022,8 @@ declare module "pg-query-native" {
       jointree?: PgFromExpr;
       /* target list (of TargetEntry) */
       targetList?: PgNode[];
+      /* OVERRIDING clause */
+      override: PgOverridingKind;
       /* ON CONFLICT DO [NOTHING | UPDATE] */
       onConflict?: PgOnConflictExpr;
       /* return-values list (of TargetEntry) */
@@ -2788,6 +3059,10 @@ declare module "pg-query-native" {
       									 * are not written out as part of Query. */
 
       withCheckOptions?: PgNode[];
+      /* start location, or -1 if unknown */
+      stmt_location: number;
+      /* length in bytes; 0 means "rest of string" */
+      stmt_len: number;
     }
   }
   /*
@@ -2970,13 +3245,18 @@ declare module "pg-query-native" {
     }
   }
   /*
-   * A_Indices - array subscript or slice bounds ([lidx:uidx] or [uidx])
+   * A_Indices - array subscript or slice bounds ([idx] or [lidx:uidx])
+   *
+   * In slice case, either or both of lidx and uidx can be NULL (omitted).
+   * In non-slice case, uidx holds the single subscript and lidx is always NULL.
    */
   interface PgA_Indices extends PgNode {
     A_Indices: {
-      /* NULL if it's a single subscript */
+      /* true if slice (i.e., colon present) */
+      is_slice: boolean;
+      /* slice lower bound, if any */
       lidx?: PgNode;
-      /**/
+      /* subscript, or slice upper bound if any */
       uidx?: PgNode;
     }
   }
@@ -3154,6 +3434,51 @@ declare module "pg-query-native" {
     }
   }
   /*
+   * RangeTableFunc - raw form of "table functions" such as XMLTABLE
+   */
+  interface PgRangeTableFunc extends PgNode {
+    RangeTableFunc: {
+      /* does it have LATERAL prefix? */
+      lateral: boolean;
+      /* document expression */
+      docexpr?: PgNode;
+      /* row generator expression */
+      rowexpr?: PgNode;
+      /* list of namespaces as ResTarget */
+      namespaces?: PgNode[];
+      /* list of RangeTableFuncCol */
+      columns?: PgNode[];
+      /* table alias & optional column aliases */
+      alias?: PgAlias;
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
+   * RangeTableFuncCol - one column in a RangeTableFunc->columns
+   *
+   * If for_ordinality is true (FOR ORDINALITY), then the column is an int4
+   * column and the rest of the fields are ignored.
+   */
+  interface PgRangeTableFuncCol extends PgNode {
+    RangeTableFuncCol: {
+      /* name of generated column */
+      colname?: string;
+      /* type of generated column */
+      typeName?: PgTypeName;
+      /* does it have FOR ORDINALITY? */
+      for_ordinality: boolean;
+      /* does it have NOT NULL? */
+      is_not_null: boolean;
+      /* column filter expression */
+      colexpr?: PgNode;
+      /* column default value expression */
+      coldefexpr?: PgNode;
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
    * RangeTableSample - TABLESAMPLE appearing in a raw FROM clause
    *
    * This node, appearing only in raw parse trees, represents
@@ -3209,12 +3534,16 @@ declare module "pg-query-native" {
       is_not_null: boolean;
       /* column definition came from table type */
       is_from_type: boolean;
+      /* column def came from partition parent */
+      is_from_parent: boolean;
       /* attstorage setting, or 0 for default */
       storage: string;
       /* default value (untransformed parse tree) */
       raw_default?: PgNode;
       /* default value (transformed expr tree) */
       cooked_default?: PgNode;
+      /* attidentity setting */
+      identity: string;
       /* untransformed COLLATE spec, if any */
       collClause?: PgCollateClause;
       /* collation OID (InvalidOid if not set) */
@@ -3283,6 +3612,8 @@ declare module "pg-query-native" {
       arg?: PgNode;
       /* unspecified action, or SET/ADD/DROP */
       defaction: PgDefElemAction;
+      /* token location, or -1 if unknown */
+      location: number;
     }
   }
   /*
@@ -3317,6 +3648,85 @@ declare module "pg-query-native" {
       typeName?: PgTypeName;
       /* token location, or -1 if unknown */
       location: number;
+    }
+  }
+  /*
+   * PartitionElem - parse-time representation of a single partition key
+   *
+   * expr can be either a raw expression tree or a parse-analyzed expression.
+   * We don't store these on-disk, though.
+   */
+  interface PgPartitionElem extends PgNode {
+    PartitionElem: {
+      /* name of column to partition on, or NULL */
+      name?: string;
+      /* expression to partition on, or NULL */
+      expr?: PgNode;
+      /* name of collation; NIL = default */
+      collation?: PgNode[];
+      /* name of desired opclass; NIL = default */
+      opclass?: PgNode[];
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
+   * PartitionSpec - parse-time representation of a partition key specification
+   *
+   * This represents the key space we will be partitioning on.
+   */
+  interface PgPartitionSpec extends PgNode {
+    PartitionSpec: {
+      /* partitioning strategy ('list' or 'range') */
+      strategy?: string;
+      /* List of PartitionElems */
+      partParams?: PgNode[];
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
+   * PartitionBoundSpec - a partition bound specification
+   *
+   * This represents the portion of the partition key space assigned to a
+   * particular partition.  These are stored on disk in pg_class.relpartbound.
+   */
+  interface PgPartitionBoundSpec extends PgNode {
+    PartitionBoundSpec: {
+      /* see PARTITION_STRATEGY codes above */
+      strategy: string;
+      /* List of Consts (or A_Consts in raw tree) */
+      listdatums?: PgNode[];
+      /* List of PartitionRangeDatums */
+      lowerdatums?: PgNode[];
+      /* List of PartitionRangeDatums */
+      upperdatums?: PgNode[];
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /**/
+  interface PgPartitionRangeDatum extends PgNode {
+    PartitionRangeDatum: {
+      /**/
+      kind: PgPartitionRangeDatumKind;
+      /* Const (or A_Const in raw tree), if kind is
+      								 * PARTITION_RANGE_DATUM_VALUE, else NULL */
+
+      value?: PgNode;
+      /* token location, or -1 if unknown */
+      location: number;
+    }
+  }
+  /*
+   * PartitionCmd - info for ALTER TABLE ATTACH/DETACH PARTITION commands
+   */
+  interface PgPartitionCmd extends PgNode {
+    PartitionCmd: {
+      /* name of partition to attach/detach */
+      name?: PgRangeVar;
+      /* FOR VALUES, if attaching */
+      bound?: PgPartitionBoundSpec;
     }
   }
   /*--------------------
@@ -3390,6 +3800,13 @@ declare module "pg-query-native" {
    *	  FirstLowInvalidHeapAttributeNumber from column numbers before storing
    *	  them in these fields.  A whole-row Var reference is represented by
    *	  setting the bit for InvalidAttrNumber.
+   *
+   *	  securityQuals is a list of security barrier quals (boolean expressions),
+   *	  to be tested in the listed order before returning a row from the
+   *	  relation.  It is always NIL in parser output.  Entries are added by the
+   *	  rewriter to implement security-barrier views and/or row-level security.
+   *	  Note that the planner turns each boolean expression into an implicitly
+   *	  AND'ed sublist, as is its usual habit with qualification expressions.
    *--------------------
    */
   interface PgRangeTblEntry extends PgNode {
@@ -3414,10 +3831,10 @@ declare module "pg-query-native" {
       functions?: PgNode[];
       /* is this called WITH ORDINALITY? */
       funcordinality: boolean;
+      /**/
+      tablefunc?: PgTableFunc;
       /* list of expression lists */
       values_lists?: PgNode[];
-      /* OID list of column collation OIDs */
-      values_collations?: PgNode[];
       /* name of the WITH list item */
       ctename?: string;
       /* number of query levels up */
@@ -3425,11 +3842,15 @@ declare module "pg-query-native" {
       /* is this a recursive self-reference? */
       self_reference: boolean;
       /* OID list of column type OIDs */
-      ctecoltypes?: PgNode[];
+      coltypes?: PgNode[];
       /* integer list of column typmods */
-      ctecoltypmods?: PgNode[];
+      coltypmods?: PgNode[];
       /* OID list of column collation OIDs */
-      ctecolcollations?: PgNode[];
+      colcollations?: PgNode[];
+      /* name of ephemeral named relation */
+      enrname?: string;
+      /* estimated or actual from caller */
+      enrtuples: number;
       /* user-written alias clause, if any */
       alias?: PgAlias;
       /* expanded reference names */
@@ -3450,7 +3871,7 @@ declare module "pg-query-native" {
       insertedCols?: any;
       /* columns needing UPDATE permission */
       updatedCols?: any;
-      /* any security barrier quals to apply */
+      /* security barrier quals to apply, if any */
       securityQuals?: PgNode[];
     }
   }
@@ -3748,6 +4169,46 @@ declare module "pg-query-native" {
       ctecolcollations?: PgNode[];
     }
   }
+  /*
+   * TriggerTransition -
+   *	   representation of transition row or table naming clause
+   *
+   * Only transition tables are initially supported in the syntax, and only for
+   * AFTER triggers, but other permutations are accepted by the parser so we can
+   * give a meaningful message from C code.
+   */
+  interface PgTriggerTransition extends PgNode {
+    TriggerTransition: {
+      /**/
+      name?: string;
+      /**/
+      isNew: boolean;
+      /**/
+      isTable: boolean;
+    }
+  }
+  /*
+   *		RawStmt --- container for any one statement's raw parse tree
+   *
+   * Parse analysis converts a raw parse tree headed by a RawStmt node into
+   * an analyzed statement headed by a Query node.  For optimizable statements,
+   * the conversion is complex.  For utility statements, the parser usually just
+   * transfers the raw parse tree (sans RawStmt) into the utilityStmt field of
+   * the Query node, and all the useful work happens at execution time.
+   *
+   * stmt_location/stmt_len identify the portion of the source text string
+   * containing this raw statement (useful for multi-statement strings).
+   */
+  interface PgRawStmt extends PgNode {
+    RawStmt: {
+      /* raw parse tree */
+      stmt?: PgNode;
+      /* start location, or -1 if unknown */
+      stmt_location: number;
+      /* length in bytes; 0 means "rest of string" */
+      stmt_len: number;
+    }
+  }
   /* ----------------------
    *		Insert Statement
    *
@@ -3770,6 +4231,8 @@ declare module "pg-query-native" {
       returningList?: PgNode[];
       /* WITH clause */
       withClause?: PgWithClause;
+      /* OVERRIDING clause */
+      override: PgOverridingKind;
     }
   }
   /* ----------------------
@@ -3917,7 +4380,7 @@ declare module "pg-query-native" {
       /* the name of the schema to create */
       schemaname?: string;
       /* the owner of the created schema */
-      authrole?: PgNode;
+      authrole?: PgRoleSpec;
       /* schema components (list of parsenodes) */
       schemaElts?: PgNode[];
       /* just do nothing if schema already exists? */
@@ -3964,8 +4427,8 @@ declare module "pg-query-native" {
       								 * or tablespace */
 
       name?: string;
-      /* RoleSpec */
-      newowner?: PgNode;
+      /**/
+      newowner?: PgRoleSpec;
       /* definition of new column, index,
       								 * constraint, or parent table */
 
@@ -3974,6 +4437,16 @@ declare module "pg-query-native" {
       behavior: PgDropBehavior;
       /* skip error if missing? */
       missing_ok: boolean;
+    }
+  }
+  /* ----------------------
+   * Alter Collation
+   * ----------------------
+   */
+  interface PgAlterCollationStmt extends PgNode {
+    AlterCollationStmt: {
+      /**/
+      collname?: PgNode[];
     }
   }
   /* ----------------------
@@ -4019,8 +4492,8 @@ declare module "pg-query-native" {
       targtype: PgGrantTargetType;
       /* kind of object being operated on */
       objtype: PgGrantObjectType;
-      /* list of RangeVar nodes, FuncWithArgs nodes,
-      								 * or plain names (as Value strings) */
+      /* list of RangeVar nodes, ObjectWithArgs
+      								 * nodes, or plain names (as Value strings) */
 
       objects?: PgNode[];
       /* list of AccessPriv nodes */
@@ -4034,16 +4507,21 @@ declare module "pg-query-native" {
     }
   }
   /*
-   * Note: FuncWithArgs carries only the types of the input parameters of the
+   * Note: ObjectWithArgs carries only the types of the input parameters of the
    * function.  So it is sufficient to identify an existing function, but it
    * is not enough info to define a function nor to call it.
    */
-  interface PgFuncWithArgs extends PgNode {
-    FuncWithArgs: {
-      /* qualified name of function */
-      funcname?: PgNode[];
+  interface PgObjectWithArgs extends PgNode {
+    ObjectWithArgs: {
+      /* qualified name of function/operator */
+      objname?: PgNode[];
       /* list of Typename nodes */
-      funcargs?: PgNode[];
+      objargs?: PgNode[];
+      /* argument list was omitted, so name must
+      									 * be unique (note that objargs == NIL
+      									 * means zero args) */
+
+      args_unspecified: boolean;
     }
   }
   /*
@@ -4081,7 +4559,7 @@ declare module "pg-query-native" {
       /* with admin option */
       admin_opt: boolean;
       /* set grantor to other than current role */
-      grantor?: PgNode;
+      grantor?: PgRoleSpec;
       /* drop behavior (for REVOKE) */
       behavior: PgDropBehavior;
     }
@@ -4110,7 +4588,9 @@ declare module "pg-query-native" {
     CopyStmt: {
       /* the relation to copy */
       relation?: PgRangeVar;
-      /* the SELECT query to copy */
+      /* the query (SELECT or DML statement with
+      								 * RETURNING) to copy, as a raw parse tree */
+
       query?: PgNode;
       /* List of column names (as Strings), or NIL
       								 * for all columns */
@@ -4169,6 +4649,10 @@ declare module "pg-query-native" {
       								 * inhRelation) */
 
       inhRelations?: PgNode[];
+      /* FOR VALUES clause */
+      partbound?: PgPartitionBoundSpec;
+      /* PARTITION BY clause */
+      partspec?: PgPartitionSpec;
       /* OF typename */
       ofTypename?: PgTypeName;
       /* constraints (list of Constraint nodes) */
@@ -4202,6 +4686,8 @@ declare module "pg-query-native" {
       raw_expr?: PgNode;
       /* expr, as nodeToString representation */
       cooked_expr?: string;
+      /**/
+      generated_when: string;
       /* String nodes naming referenced column(s) */
       keys?: PgNode[];
       /* list of (IndexElem, operator name) pairs */
@@ -4230,7 +4716,9 @@ declare module "pg-query-native" {
       fk_del_action: string;
       /* pg_constraint.conpfeqop of my former self */
       old_conpfeqop?: PgNode[];
-      /* pg_constraint.confrelid of my former self */
+      /* pg_constraint.confrelid of my former
+      									 * self */
+
       old_pktable_oid: number;
       /* skip validation of existing rows? */
       skip_validation: boolean;
@@ -4247,7 +4735,7 @@ declare module "pg-query-native" {
       /**/
       tablespacename?: string;
       /**/
-      owner?: PgNode;
+      owner?: PgRoleSpec;
       /**/
       location?: string;
       /**/
@@ -4328,9 +4816,7 @@ declare module "pg-query-native" {
       /* Object's type */
       objtype: PgObjectType;
       /* Qualified name of the object */
-      objname?: PgNode[];
-      /* Arguments if needed (eg, for functions) */
-      objargs?: PgNode[];
+      object?: PgNode;
     }
   }
   /* ----------------------
@@ -4375,6 +4861,8 @@ declare module "pg-query-native" {
       version?: string;
       /* FDW name */
       fdwname?: string;
+      /* just do nothing if it already exists? */
+      if_not_exists: boolean;
       /* generic options to server */
       options?: PgNode[];
     }
@@ -4416,9 +4904,11 @@ declare module "pg-query-native" {
   interface PgCreateUserMappingStmt extends PgNode {
     CreateUserMappingStmt: {
       /* user role */
-      user?: PgNode;
+      user?: PgRoleSpec;
       /* server name */
       servername?: string;
+      /* just do nothing if it already exists? */
+      if_not_exists: boolean;
       /* generic options to server */
       options?: PgNode[];
     }
@@ -4430,7 +4920,7 @@ declare module "pg-query-native" {
   interface PgAlterUserMappingStmt extends PgNode {
     AlterUserMappingStmt: {
       /* user role */
-      user?: PgNode;
+      user?: PgRoleSpec;
       /* server name */
       servername?: string;
       /* generic options to server */
@@ -4444,7 +4934,7 @@ declare module "pg-query-native" {
   interface PgDropUserMappingStmt extends PgNode {
     DropUserMappingStmt: {
       /* user role */
-      user?: PgNode;
+      user?: PgRoleSpec;
       /* server name */
       servername?: string;
       /* ignore missing mappings */
@@ -4480,6 +4970,8 @@ declare module "pg-query-native" {
       table?: PgRangeVar;
       /* the command name the policy applies to */
       cmd_name?: string;
+      /* restrictive or permissive policy */
+      permissive: boolean;
       /* the roles associated with the policy */
       roles?: PgNode[];
       /* the policy's condition */
@@ -4504,6 +4996,20 @@ declare module "pg-query-native" {
       qual?: PgNode;
       /* the policy's WITH CHECK condition. */
       with_check?: PgNode;
+    }
+  }
+  /*----------------------
+   *		Create ACCESS METHOD Statement
+   *----------------------
+   */
+  interface PgCreateAmStmt extends PgNode {
+    CreateAmStmt: {
+      /* access method name */
+      amname?: string;
+      /* handler function name */
+      handler_name?: PgNode[];
+      /* type of access method */
+      amtype: string;
     }
   }
   /* ----------------------
@@ -4532,6 +5038,8 @@ declare module "pg-query-native" {
       whenClause?: PgNode;
       /* This is a constraint trigger */
       isconstraint: boolean;
+      /* TriggerTransition nodes, or NIL if none */
+      transitionRels?: PgNode[];
       /* [NOT] DEFERRABLE */
       deferrable: boolean;
       /* INITIALLY {DEFERRED|IMMEDIATE} */
@@ -4622,7 +5130,7 @@ declare module "pg-query-native" {
   interface PgAlterRoleStmt extends PgNode {
     AlterRoleStmt: {
       /* role */
-      role?: PgNode;
+      role?: PgRoleSpec;
       /* List of DefElem nodes */
       options?: PgNode[];
       /* +1 = add members, -1 = drop members */
@@ -4641,7 +5149,7 @@ declare module "pg-query-native" {
   interface PgAlterRoleSetStmt extends PgNode {
     AlterRoleSetStmt: {
       /* role */
-      role?: PgNode;
+      role?: PgRoleSpec;
       /* database name, or NULL */
       database?: string;
       /* SET or RESET subcommand */
@@ -4677,6 +5185,8 @@ declare module "pg-query-native" {
       options?: PgNode[];
       /* ID of owner, or InvalidOid for default */
       ownerId: number;
+      /**/
+      for_identity: boolean;
       /* just do nothing if it already exists? */
       if_not_exists: boolean;
     }
@@ -4691,6 +5201,8 @@ declare module "pg-query-native" {
       sequence?: PgRangeVar;
       /**/
       options?: PgNode[];
+      /**/
+      for_identity: boolean;
       /* skip error if a role is missing? */
       missing_ok: boolean;
     }
@@ -4711,6 +5223,8 @@ declare module "pg-query-native" {
       args?: PgNode[];
       /* a list of DefElem */
       definition?: PgNode[];
+      /* just do nothing if it already exists? */
+      if_not_exists: boolean;
     }
   }
   /* ----------------------
@@ -4757,15 +5271,15 @@ declare module "pg-query-native" {
     CreateOpClassItem: {
       /* see codes above */
       itemtype: number;
-      /* operator or function name */
-      name?: PgNode[];
-      /* argument types */
-      args?: PgNode[];
+      /* operator or function name and args */
+      name?: PgObjectWithArgs;
       /* strategy num or support proc num */
       number: number;
       /* only used for ordering operators */
       order_family?: PgNode[];
-      /* only used for functions */
+      /* amproclefttype/amprocrighttype or
+      								 * amoplefttype/amoprighttype */
+
       class_args?: PgNode[];
       /* datatype stored in index */
       storedtype?: PgTypeName;
@@ -4805,10 +5319,8 @@ declare module "pg-query-native" {
    */
   interface PgDropStmt extends PgNode {
     DropStmt: {
-      /* list of sublists of names (as Values) */
+      /* list of names */
       objects?: PgNode[];
-      /* list of sublists of arguments (as Values) */
-      arguments?: PgNode[];
       /* object type */
       removeType: PgObjectType;
       /* RESTRICT or CASCADE behavior */
@@ -4842,9 +5354,7 @@ declare module "pg-query-native" {
       /* Object's type */
       objtype: PgObjectType;
       /* Qualified name of the object */
-      objname?: PgNode[];
-      /* Arguments if needed (eg, for functions) */
-      objargs?: PgNode[];
+      object?: PgNode;
       /* Comment to insert, or NULL to remove */
       comment?: string;
     }
@@ -4858,9 +5368,7 @@ declare module "pg-query-native" {
       /* Object's type */
       objtype: PgObjectType;
       /* Qualified name of the object */
-      objname?: PgNode[];
-      /* Arguments if needed (eg, for functions) */
-      objargs?: PgNode[];
+      object?: PgNode;
       /* Label provider (or NULL) */
       provider?: string;
       /* New security label to be assigned */
@@ -4874,7 +5382,7 @@ declare module "pg-query-native" {
       portalname?: string;
       /* bitmask of options (see above) */
       options: number;
-      /* the raw SELECT query */
+      /* the query (see comments above) */
       query?: PgNode;
     }
   }
@@ -4958,6 +5466,24 @@ declare module "pg-query-native" {
     }
   }
   /* ----------------------
+   *		Create Statistics Statement
+   * ----------------------
+   */
+  interface PgCreateStatsStmt extends PgNode {
+    CreateStatsStmt: {
+      /* qualified name (list of Value strings) */
+      defnames?: PgNode[];
+      /* stat types (list of Value strings) */
+      stat_types?: PgNode[];
+      /* expressions to build statistics on */
+      exprs?: PgNode[];
+      /* rels to build stats on (list of RangeVar) */
+      relations?: PgNode[];
+      /* do nothing if stats name already exists */
+      if_not_exists: boolean;
+    }
+  }
+  /* ----------------------
    *		Create Function Statement
    * ----------------------
    */
@@ -5000,7 +5526,7 @@ declare module "pg-query-native" {
   interface PgAlterFunctionStmt extends PgNode {
     AlterFunctionStmt: {
       /* name and args of function */
-      func?: PgFuncWithArgs;
+      func?: PgObjectWithArgs;
       /* list of DefElem */
       actions?: PgNode[];
     }
@@ -5046,9 +5572,7 @@ declare module "pg-query-native" {
       /* in case it's a table */
       relation?: PgRangeVar;
       /* in case it's some other object */
-      object?: PgNode[];
-      /* argument types, if applicable */
-      objarg?: PgNode[];
+      object?: PgNode;
       /* name of contained object (column, rule,
       								 * trigger, etc) */
 
@@ -5062,6 +5586,22 @@ declare module "pg-query-native" {
     }
   }
   /* ----------------------
+   * ALTER object DEPENDS ON EXTENSION extname
+   * ----------------------
+   */
+  interface PgAlterObjectDependsStmt extends PgNode {
+    AlterObjectDependsStmt: {
+      /* OBJECT_FUNCTION, OBJECT_TRIGGER, etc */
+      objectType: PgObjectType;
+      /* in case a table is involved */
+      relation?: PgRangeVar;
+      /* name of the object */
+      object?: PgNode;
+      /* extension name */
+      extname?: any;
+    }
+  }
+  /* ----------------------
    *		ALTER object SET SCHEMA Statement
    * ----------------------
    */
@@ -5072,9 +5612,7 @@ declare module "pg-query-native" {
       /* in case it's a table */
       relation?: PgRangeVar;
       /* in case it's some other object */
-      object?: PgNode[];
-      /* argument types, if applicable */
-      objarg?: PgNode[];
+      object?: PgNode;
       /* the new schema */
       newschema?: string;
       /* skip error if missing? */
@@ -5092,11 +5630,21 @@ declare module "pg-query-native" {
       /* in case it's a table */
       relation?: PgRangeVar;
       /* in case it's some other object */
-      object?: PgNode[];
-      /* argument types, if applicable */
-      objarg?: PgNode[];
+      object?: PgNode;
       /* the new owner */
-      newowner?: PgNode;
+      newowner?: PgRoleSpec;
+    }
+  }
+  /* ----------------------
+   *		Alter Operator Set Restrict, Join
+   * ----------------------
+   */
+  interface PgAlterOperatorStmt extends PgNode {
+    AlterOperatorStmt: {
+      /* operator name and argument types */
+      opername?: PgObjectWithArgs;
+      /* List of DefElem nodes */
+      options?: PgNode[];
     }
   }
   /* ----------------------
@@ -5211,14 +5759,16 @@ declare module "pg-query-native" {
     AlterEnumStmt: {
       /* qualified name (list of Value strings) */
       typeName?: PgNode[];
+      /* old enum value's name, if renaming */
+      oldVal?: string;
       /* new enum value's name */
       newVal?: string;
       /* neighboring enum value, if specified */
       newValNeighbor?: string;
       /* place new enum value after neighbor? */
       newValIsAfter: boolean;
-      /* no error if label already exists */
-      skipIfExists: boolean;
+      /* no error if new already exists? */
+      skipIfNewValExists: boolean;
     }
   }
   /* ----------------------
@@ -5231,7 +5781,7 @@ declare module "pg-query-native" {
       view?: PgRangeVar;
       /* target column names */
       aliases?: PgNode[];
-      /* the SELECT query */
+      /* the SELECT query (as a raw parse tree) */
       query?: PgNode;
       /* replace an existing view? */
       replace: boolean;
@@ -5344,9 +5894,9 @@ declare module "pg-query-native" {
   /* ----------------------
    *		Explain Statement
    *
-   * The "query" field is either a raw parse tree (SelectStmt, InsertStmt, etc)
-   * or a Query node if parse analysis has been done.  Note that rewriting and
-   * planning of the query are always postponed until execution of EXPLAIN.
+   * The "query" field is initially a raw parse tree, and is converted to a
+   * Query node during parse analysis.  Note that rewriting and planning
+   * of the query are always postponed until execution.
    * ----------------------
    */
   interface PgExplainStmt extends PgNode {
@@ -5487,7 +6037,7 @@ declare module "pg-query-native" {
       /**/
       targettype?: PgTypeName;
       /**/
-      func?: PgFuncWithArgs;
+      func?: PgObjectWithArgs;
       /**/
       context: PgCoercionContext;
       /**/
@@ -5507,9 +6057,9 @@ declare module "pg-query-native" {
       /**/
       lang?: string;
       /**/
-      fromsql?: PgFuncWithArgs;
+      fromsql?: PgObjectWithArgs;
       /**/
-      tosql?: PgFuncWithArgs;
+      tosql?: PgObjectWithArgs;
     }
   }
   /* ----------------------
@@ -5567,7 +6117,7 @@ declare module "pg-query-native" {
       /**/
       roles?: PgNode[];
       /**/
-      newrole?: PgNode;
+      newrole?: PgRoleSpec;
     }
   }
   /*
@@ -5600,17 +6150,84 @@ declare module "pg-query-native" {
       missing_ok: boolean;
     }
   }
+  /**/
+  interface PgCreatePublicationStmt extends PgNode {
+    CreatePublicationStmt: {
+      /* Name of of the publication */
+      pubname?: string;
+      /* List of DefElem nodes */
+      options?: PgNode[];
+      /* Optional list of tables to add */
+      tables?: PgNode[];
+      /* Special publication for all tables in db */
+      for_all_tables: boolean;
+    }
+  }
+  /**/
+  interface PgAlterPublicationStmt extends PgNode {
+    AlterPublicationStmt: {
+      /* Name of of the publication */
+      pubname?: string;
+      /* List of DefElem nodes */
+      options?: PgNode[];
+      /* List of tables to add/drop */
+      tables?: PgNode[];
+      /* Special publication for all tables in db */
+      for_all_tables: boolean;
+      /* What action to perform with the tables */
+      tableAction: PgDefElemAction;
+    }
+  }
+  /**/
+  interface PgCreateSubscriptionStmt extends PgNode {
+    CreateSubscriptionStmt: {
+      /* Name of of the subscription */
+      subname?: string;
+      /* Connection string to publisher */
+      conninfo?: string;
+      /* One or more publication to subscribe to */
+      publication?: PgNode[];
+      /* List of DefElem nodes */
+      options?: PgNode[];
+    }
+  }
+  /**/
+  interface PgAlterSubscriptionStmt extends PgNode {
+    AlterSubscriptionStmt: {
+      /* ALTER_SUBSCRIPTION_OPTIONS, etc */
+      kind: PgAlterSubscriptionType;
+      /* Name of of the subscription */
+      subname?: string;
+      /* Connection string to publisher */
+      conninfo?: string;
+      /* One or more publication to subscribe to */
+      publication?: PgNode[];
+      /* List of DefElem nodes */
+      options?: PgNode[];
+    }
+  }
+  /**/
+  interface PgDropSubscriptionStmt extends PgNode {
+    DropSubscriptionStmt: {
+      /* Name of of the subscription */
+      subname?: string;
+      /* Skip error if missing? */
+      missing_ok: boolean;
+      /* RESTRICT or CASCADE behavior */
+      behavior: PgDropBehavior;
+    }
+  }
 
   interface PgParseError extends Error {
-    fileName: string;
-    lineNumber: number;
-    cursorPosition: number;
-    functionName: string;
+    filename: string;
+    lineno: number;
+    cursorpos: number;
+    funcname: string;
     context: string;
   }
 
   interface PgParseResult {
-    query?: PgNode[];
+    parse_tree?: PgNode[];
     error?: PgParseError;
   }
 

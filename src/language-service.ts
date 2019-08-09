@@ -45,7 +45,7 @@ export default class SqlTemplateLanguageService
 					createError({
 						code: 1001,
 						messageText: `Failed to parse: ${e.message}`,
-						start: e.cursorPosition,
+						start: e.cursorPosition - 1,
 						length: 1
 					})
 				];

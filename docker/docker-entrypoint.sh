@@ -2,5 +2,5 @@
 set -e
 
 yarn
-yarn generate-pg-query-native-types
+yarn generate-pg-query-emscripten-types
 exec yarn compile --watch

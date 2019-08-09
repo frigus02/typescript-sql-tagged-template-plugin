@@ -1,10 +1,11 @@
-import { parse, PgParseError } from "pg-query-native";
+import { parse, PgParseError } from "pg-query-emscripten";
 import {
 	isPgDeleteStmt,
 	isPgInsertStmt,
 	isPgSelectStmt,
-	isPgUpdateStmt
-} from "./pg-query-native-type-guards";
+	isPgUpdateStmt,
+	isPgRawStmt
+} from "./pg-query-emscripten-type-guards";
 import {
 	getParamMapForDelete,
 	getParamMapForInsert,
@@ -24,7 +25,7 @@ export class ParseError extends Error {
 
 	constructor(error: PgParseError) {
 		super(error.message);
-		this.cursorPosition = error.cursorPosition;
+		this.cursorPosition = error.cursorpos;
 	}
 }
 
@@ -33,17 +34,23 @@ export const analyze = (query: string): Analysis => {
 	const result = parse(query);
 	if (result.error) {
 		throw new ParseError(result.error);
-	} else if (result.query) {
-		const stmt = result.query[0];
+	} else if (result.parse_tree) {
+		const stmt = result.parse_tree[0];
 		let parameters;
-		if (isPgUpdateStmt(stmt)) {
-			parameters = getParamMapForUpdate(stmt, warnings);
-		} else if (isPgInsertStmt(stmt)) {
-			parameters = getParamMapForInsert(stmt, warnings);
-		} else if (isPgSelectStmt(stmt)) {
-			parameters = getParamMapForSelect(stmt, warnings);
-		} else if (isPgDeleteStmt(stmt)) {
-			parameters = getParamMapForDelete(stmt, warnings);
+		if (isPgRawStmt(stmt) && stmt.RawStmt.stmt) {
+			const innerStmt = stmt.RawStmt.stmt;
+			if (isPgUpdateStmt(innerStmt)) {
+				parameters = getParamMapForUpdate(innerStmt, warnings);
+			} else if (isPgInsertStmt(innerStmt)) {
+				parameters = getParamMapForInsert(innerStmt, warnings);
+			} else if (isPgSelectStmt(innerStmt)) {
+				parameters = getParamMapForSelect(innerStmt, warnings);
+			} else if (isPgDeleteStmt(innerStmt)) {
+				parameters = getParamMapForDelete(innerStmt, warnings);
+			} else {
+				warnings.push(notSupported("statement", innerStmt));
+				parameters = new Map<number, Parameter>();
+			}
 		} else {
 			warnings.push(notSupported("statement", stmt));
 			parameters = new Map<number, Parameter>();

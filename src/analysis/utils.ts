@@ -1,4 +1,4 @@
-import { PgNode } from "pg-query-native";
+import { PgNode } from "pg-query-emscripten";
 
 export const assignMap = <K, V>(
   dst: Map<K, V>,

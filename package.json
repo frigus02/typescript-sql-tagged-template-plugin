@@ -14,7 +14,7 @@
 		"url": "https://github.com/frigus02/typescript-sql-tagged-template-plugin"
 	},
 	"dependencies": {
-		"pg-query-native": "^1.2.0",
+		"pg-query-emscripten": "^0.1.0",
 		"typescript-template-language-service-decorator": "^2.2.0"
 	},
 	"devDependencies": {
@@ -32,7 +32,7 @@
 		"compile": "tsc",
 		"docker": "docker-compose -f docker/docker-compose.yml up",
 		"docker:attach": "docker exec -it docker_main_1 bash",
-		"generate-pg-query-native-types": "node scripts/pg-query-native-types/generate.js",
+		"generate-pg-query-emscripten-types": "node scripts/pg-query-emscripten-types/generate.js",
 		"test": "jest \"build/.+\\.test\\.js$\""
 	}
 }

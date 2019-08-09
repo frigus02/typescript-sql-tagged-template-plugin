@@ -84,7 +84,7 @@ const generateTypings = async () => {
 		.join("\n");
 
 	const result = outdent`
-    declare module "pg-query-native" {
+    declare module "pg-query-emscripten" {
       interface PgNode {}
 
     ${indentString(enums, 2)}
@@ -92,15 +92,15 @@ const generateTypings = async () => {
     ${indentString(interfaces, 2)}
 
       interface PgParseError extends Error {
-        fileName: string;
-        lineNumber: number;
-        cursorPosition: number;
-        functionName: string;
+        filename: string;
+        lineno: number;
+        cursorpos: number;
+        funcname: string;
         context: string;
       }
 
       interface PgParseResult {
-        query?: PgNode[];
+        parse_tree?: PgNode[];
         error?: PgParseError;
       }
 
@@ -108,7 +108,7 @@ const generateTypings = async () => {
     }
   `;
 
-	const dir = `${__dirname}/../../typings/pg-query-native`;
+	const dir = `${__dirname}/../../typings/pg-query-emscripten`;
 	await mkdir(dir, { recursive: true });
 	await writeFile(`${dir}/index.d.ts`, result, "utf8");
 };
@@ -125,14 +125,14 @@ const generateTypeGuards = async () => {
 		)
 		.join("\n");
 	const result = outdent`
-    import { PgNode, ${imports} } from "pg-query-native";
+    import { PgNode, ${imports} } from "pg-query-emscripten";
     export const isPgNodeArray = (obj: PgNode): obj is PgNode[] => Array.isArray(obj);
     ${typeGuards}
   `;
 
 	const dir = `${__dirname}/../../src/analysis`;
 	await mkdir(dir, { recursive: true });
-	await writeFile(`${dir}/pg-query-native-type-guards.ts`, result, "utf8");
+	await writeFile(`${dir}/pg-query-emscripten-type-guards.ts`, result, "utf8");
 };
 
 async function main() {

@@ -8,7 +8,7 @@ import {
 	PgSelectStmt,
 	PgUpdateStmt,
 	PgA_Expr
-} from "pg-query-native";
+} from "pg-query-emscripten";
 import {
 	isPgA_Const,
 	isPgA_Expr,
@@ -24,9 +24,8 @@ import {
 	isPgString,
 	isPgSubLink,
 	isPgInteger
-} from "./pg-query-native-type-guards";
+} from "./pg-query-emscripten-type-guards";
 import { assignMap, notSupported, other, Warning } from "./utils";
-import { isString } from "util";
 
 type Alias = string;
 
