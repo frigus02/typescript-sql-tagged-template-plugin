@@ -1,4 +1,3 @@
-import { Logger } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
 
 export default class VirtualServiceHost implements ts.LanguageServiceHost {
@@ -6,14 +5,15 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 
 	constructor(
 		private readonly typescript: typeof ts,
-		private readonly logger: Logger,
 		private readonly compilerOptions: ts.CompilerOptions,
 		private readonly workspacePath: string
 	) {}
 
-	updateFile(fileName: string, content: string) {
-		this.logger.log(`updateFile(${fileName}, ${content})`);
+	withFile<T>(fileName: string, content: string, callback: () => T): T {
 		this.files.set(fileName, content);
+		const result = callback();
+		this.files.delete(fileName);
+		return result;
 	}
 
 	getCompilationSettings() {
@@ -21,9 +21,6 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 	}
 
 	getScriptFileNames() {
-		this.logger.log(
-			`getScriptFileNames() --> ${[...this.files.keys()].join(", ")}`
-		);
 		return Array.from(this.files.keys());
 	}
 
@@ -36,15 +33,15 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 	}
 
 	getScriptSnapshot(fileName: string) {
-		const file = this.files.get(fileName);
-		this.logger.log(`getScriptSnapshot(${fileName}) --> ${file}`);
-		if (file) {
-			return ts.ScriptSnapshot.fromString(file);
+		const fileText = fileName.includes("node_modules")
+			? this.typescript.sys.readFile(fileName)
+			: this.files.get(fileName);
+		if (fileText) {
+			return ts.ScriptSnapshot.fromString(fileText);
 		}
 	}
 
 	getCurrentDirectory() {
-		this.logger.log(`getCurrentDirectory() --> ${this.workspacePath}`);
 		return this.workspacePath;
 	}
 
@@ -54,15 +51,5 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 
 	useCaseSensitiveFileNames() {
 		return true;
-	}
-
-	readFile(path: string) {
-		this.logger.log(`readFile(${path}) --> ${this.files.get(path)}`);
-		return this.files.get(path);
-	}
-
-	fileExists(path: string) {
-		this.logger.log(`fileExists(${path}) --> ${this.files.has(path)}`);
-		return this.files.has(path);
 	}
 }
