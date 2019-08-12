@@ -9,6 +9,7 @@ import { TypeChecker } from "./type-checker";
 import SqlTemplateLanguageService from "./language-service";
 import { getSubstitutions } from "./substitutions";
 import VirtualServiceHost from "./virtual-service-host";
+import { ExpandedConfiguration } from "./configuration";
 
 const pluginMarker = Symbol("__sqlTaggedTemplatePluginMarker__");
 
@@ -21,6 +22,8 @@ class LanguageServiceLogger implements Logger {
 }
 
 class SqlTaggedTemplatePlugin {
+	private config?: ExpandedConfiguration;
+
 	constructor(private readonly typescript: typeof ts) {}
 
 	create(info: ts.server.PluginCreateInfo): ts.LanguageService {
@@ -30,6 +33,9 @@ class SqlTaggedTemplatePlugin {
 		}
 
 		const logger = new LanguageServiceLogger(info);
+
+		this.config = new ExpandedConfiguration(info.project, logger);
+		this.onConfigurationChanged(info.config);
 
 		const virtualServiceHost = new VirtualServiceHost(
 			this.typescript,
@@ -44,6 +50,7 @@ class SqlTaggedTemplatePlugin {
 
 		const sqlTemplateLanguageService = new SqlTemplateLanguageService(
 			logger,
+			this.config,
 			diagnostics
 		);
 
@@ -64,6 +71,10 @@ class SqlTaggedTemplatePlugin {
 
 		(languageService as any)[pluginMarker] = true;
 		return languageService;
+	}
+
+	public onConfigurationChanged(config: any) {
+		this.config!.update(config);
 	}
 }
 

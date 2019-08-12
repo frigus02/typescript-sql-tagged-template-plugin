@@ -8,8 +8,9 @@ import { pluginName } from "./config";
 import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { TypeChecker } from "./type-checker";
-import { DatabaseSchema, loadSchema, ColumnDefinition } from "./schema";
+import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { flatten } from "./utils";
+import { ExpandedConfiguration } from "./configuration";
 
 const getTemplateExpressions = (node: ts.TemplateLiteral) => {
 	if (ts.isTemplateExpression(node)) {
@@ -87,14 +88,11 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 
 export default class SqlTemplateLanguageService
 	implements TemplateLanguageService {
-	private readonly schema: DatabaseSchema;
-
 	constructor(
 		private readonly logger: Logger,
+		private readonly config: ExpandedConfiguration,
 		private readonly typeChecker: TypeChecker
-	) {
-		this.schema = loadSchema();
-	}
+	) {}
 
 	getSemanticDiagnostics(context: TemplateContext): ts.Diagnostic[] {
 		const factory = getDiagnosticFactory(context);
@@ -130,6 +128,11 @@ export default class SqlTemplateLanguageService
 			);
 		}
 
+		const schema = this.config.schema;
+		if (!schema) {
+			return [];
+		}
+
 		const expressions = getTemplateExpressions(context.node);
 		const diagnostics = Array.from(analysis.parameters.entries())
 			.map(([index, parameter]) => ({
@@ -139,8 +142,8 @@ export default class SqlTemplateLanguageService
 			.map(({ expression, parameter }) => {
 				const parameterType = getParameterType(
 					parameter,
-					this.schema,
-					"public"
+					schema,
+					this.config.defaultSchemaName
 				);
 				if (!parameterType) {
 					return [
