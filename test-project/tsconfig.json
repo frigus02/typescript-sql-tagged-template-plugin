@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "es2015",
+		"module": "commonjs",
+		"lib": [],
+		"plugins": [
+			{
+				"name": "/Users/jkuehle/Projects/typescript-sql-tagged-template-plugin/build",
+				"schemaFile": "./db-schema.json"
+			}
+		]
+	}
+}

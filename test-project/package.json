@@ -1,0 +1,11 @@
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "typescript": "^3.5.3",
+    "typescript-sql-tagged-template-plugin": "file:./.."
+  }
+}

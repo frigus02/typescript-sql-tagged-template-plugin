@@ -2,10 +2,12 @@
 	"compilerOptions": {
 		"target": "es2018",
 		"module": "commonjs",
-		"declaration": true,
 		"sourceMap": true,
 		"outDir": "build",
 		"rootDir": "src",
-		"strict": true
-	}
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true
+	},
+	"exclude": ["build", "node_modules", "test-project"]
 }
