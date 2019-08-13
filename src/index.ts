@@ -1,28 +1,19 @@
 import {
 	decorateWithTemplateLanguageService,
-	Logger,
 	TemplateSettings
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
-import { pluginName } from "./config";
 import { TypeChecker } from "./type-checker";
 import SqlTemplateLanguageService from "./language-service";
 import { getSubstitutions } from "./substitutions";
 import VirtualServiceHost from "./virtual-service-host";
-import { ExpandedConfiguration } from "./configuration";
+import { ParsedPluginConfiguration } from "./configuration";
+import Logger from "./logger";
 
 const pluginMarker = Symbol("__sqlTaggedTemplatePluginMarker__");
 
-class LanguageServiceLogger implements Logger {
-	constructor(private readonly info: ts.server.PluginCreateInfo) {}
-
-	log(msg: string) {
-		this.info.project.projectService.logger.info(`[${pluginName}] ${msg}`);
-	}
-}
-
 class SqlTaggedTemplatePlugin {
-	private config?: ExpandedConfiguration;
+	private config?: ParsedPluginConfiguration;
 
 	constructor(private readonly typescript: typeof ts) {}
 
@@ -32,9 +23,9 @@ class SqlTaggedTemplatePlugin {
 			return info.languageService;
 		}
 
-		const logger = new LanguageServiceLogger(info);
+		const logger = new Logger(info);
 
-		this.config = new ExpandedConfiguration(info.project, logger);
+		this.config = new ParsedPluginConfiguration(info.project, logger);
 		this.onConfigurationChanged(info.config);
 
 		const virtualServiceHost = new VirtualServiceHost(

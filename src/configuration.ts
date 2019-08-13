@@ -3,16 +3,16 @@ import * as ts from "typescript/lib/tsserverlibrary";
 import { DatabaseSchema, parseSchema } from "./schema";
 import { Logger } from "typescript-template-language-service-decorator";
 
-export interface TsSqlTaggedTemplatePluginConfiguration {
+export interface PluginConfiguration {
 	readonly schemaFile?: string;
-	readonly defaultSchemaName: string;
+	readonly defaultSchemaName?: string;
 }
 
-export const defaults: TsSqlTaggedTemplatePluginConfiguration = {
+const defaults = {
 	defaultSchemaName: "public"
 };
 
-export class ExpandedConfiguration {
+export class ParsedPluginConfiguration {
 	schema?: DatabaseSchema;
 	defaultSchemaName: string = defaults.defaultSchemaName;
 
@@ -21,7 +21,7 @@ export class ExpandedConfiguration {
 		private readonly logger: Logger
 	) {}
 
-	update(config: TsSqlTaggedTemplatePluginConfiguration) {
+	update(config: PluginConfiguration) {
 		this.logger.log("new config: " + JSON.stringify(config));
 
 		this.schema = undefined;
@@ -33,7 +33,11 @@ export class ExpandedConfiguration {
 			this.logger.log(`reading schema file from: ${fullPath}`);
 			const content = this.project.readFile(fullPath);
 			if (content) {
-				this.schema = parseSchema(content);
+				try {
+					this.schema = parseSchema(content);
+				} catch (e) {
+					this.logger.log(`error parsing schema file: ${e.message}`);
+				}
 			}
 		}
 

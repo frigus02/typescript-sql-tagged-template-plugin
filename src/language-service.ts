@@ -10,18 +10,15 @@ import { Parameter } from "./analysis/params";
 import { TypeChecker } from "./type-checker";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { flatten } from "./utils";
-import { ExpandedConfiguration } from "./configuration";
+import { ParsedPluginConfiguration } from "./configuration";
 
-const getTemplateExpressions = (node: ts.TemplateLiteral) => {
-	if (ts.isTemplateExpression(node)) {
-		return node.templateSpans.map(span => span.expression);
-	} else {
-		return [];
-	}
-};
+const getTemplateExpressions = (node: ts.TemplateLiteral) =>
+	ts.isTemplateExpression(node)
+		? node.templateSpans.map(span => span.expression)
+		: [];
 
-const stringifyParameter = (parameter: Parameter): string => {
-	return [
+const stringifyParameter = (parameter: Parameter): string =>
+	[
 		parameter.schema,
 		parameter.table,
 		parameter.column,
@@ -29,7 +26,6 @@ const stringifyParameter = (parameter: Parameter): string => {
 	]
 		.filter(x => x)
 		.join(".");
-};
 
 const getParameterType = (
 	parameter: Parameter,
@@ -90,7 +86,7 @@ export default class SqlTemplateLanguageService
 	implements TemplateLanguageService {
 	constructor(
 		private readonly logger: Logger,
-		private readonly config: ExpandedConfiguration,
+		private readonly config: ParsedPluginConfiguration,
 		private readonly typeChecker: TypeChecker
 	) {}
 
