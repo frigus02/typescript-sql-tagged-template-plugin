@@ -1,7 +1,5 @@
 const fs = require("fs");
 const { promisify } = require("util");
-const outdent = require("outdent");
-const indentString = require("indent-string");
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
 
@@ -16,30 +14,19 @@ const enumDefsKeys = [
 const structDefs = require("./struct_defs.json");
 const structDefsKeys = ["nodes/value", "nodes/primnodes", "nodes/parsenodes"];
 
-const getOptional = c_type => {
-	if (c_type.endsWith("*")) {
-		return "?";
-	} else {
-		return "";
-	}
-};
+const getOptional = c_type => (c_type.endsWith("*") ? "?" : "");
 
-const getType = (name, c_type) => {
-	if (name === "valuesLists") {
-		return "PgNode[][]";
-	} else {
-		return typeMap[c_type] || `Pg${c_type}`;
-	}
-};
+const getType = (name, c_type) =>
+	name === "valuesLists" ? "PgNode[][]" : typeMap[c_type] || `Pg${c_type}`;
 
 const generateFields = fields =>
 	fields
 		.filter(field => field.name && field.name !== "type")
 		.map(
-			({ name, c_type, comment }) => outdent`
-        ${comment || "/**/"}
-        ${name}${getOptional(c_type)}: ${getType(name, c_type)};
-      `
+			({ name, c_type, comment }) => `
+				${comment || "/**/"}
+				${name}${getOptional(c_type)}: ${getType(name, c_type)};
+			`
 		)
 		.join("\n");
 
@@ -51,11 +38,11 @@ const generateEnums = types =>
 				.filter(v => v.name)
 				.map((v, i) => `${v.name} = ${i}`)
 				.join(",\n");
-			return outdent`
-        ${comment || "/**/\n"}const enum Pg${type} {
-      ${indentString(enumValues, 4)}
-        }
-      `;
+			return `
+				${comment || "/**/\n"}const enum Pg${type} {
+					${enumValues}
+				}
+			`;
 		})
 		.join("\n");
 
@@ -63,13 +50,13 @@ const generateInterfaces = types =>
 	Object.keys(types)
 		.map(type => {
 			const { fields, comment } = types[type];
-			return outdent`
-        ${comment || "/**/\n"}interface Pg${type} extends PgNode {
-          ${type}: {
-        ${indentString(generateFields(fields), 4)}
-          }
-        }
-      `;
+			return `
+				${comment || "/**/\n"}interface Pg${type} extends PgNode {
+					${type}: {
+						${generateFields(fields)}
+					}
+				}
+			`;
 		})
 		.join("\n");
 
@@ -83,30 +70,29 @@ const generateTypings = async () => {
 		.map(types => generateInterfaces(types))
 		.join("\n");
 
-	const result = outdent`
-    declare module "pg-query-emscripten" {
-      interface PgNode {}
+	const result = `
+		declare module "pg-query-emscripten" {
+			interface PgNode {}
+			
+			${enums}
+			${interfaces}
 
-    ${indentString(enums, 2)}
-
-    ${indentString(interfaces, 2)}
-
-      interface PgParseError extends Error {
-        filename: string;
-        lineno: number;
-        cursorpos: number;
-        funcname: string;
-        context: string;
-      }
-
-      interface PgParseResult {
-        parse_tree?: PgNode[];
-        error?: PgParseError;
-      }
-
-      function parse(query: string): PgParseResult;
-    }
-  `;
+			interface PgParseError extends Error {
+				filename: string;
+				lineno: number;
+				cursorpos: number;
+				funcname: string;
+				context: string;
+			}
+			
+			interface PgParseResult {
+				parse_tree?: PgNode[];
+				error?: PgParseError;
+			}
+			
+			function parse(query: string): PgParseResult;
+		}
+	`;
 
 	const dir = `${__dirname}/../../typings/pg-query-emscripten`;
 	await mkdir(dir, { recursive: true });
@@ -124,11 +110,11 @@ const generateTypeGuards = async () => {
 				`export const isPg${type} = (obj: PgNode): obj is Pg${type} => !!(<any>obj).${type};`
 		)
 		.join("\n");
-	const result = outdent`
-    import { PgNode, ${imports} } from "pg-query-emscripten";
-    export const isPgNodeArray = (obj: PgNode): obj is PgNode[] => Array.isArray(obj);
-    ${typeGuards}
-  `;
+	const result = `
+		import { PgNode, ${imports} } from "pg-query-emscripten";
+		export const isPgNodeArray = (obj: PgNode): obj is PgNode[] => Array.isArray(obj);
+		${typeGuards}
+	`;
 
 	const dir = `${__dirname}/../../src/analysis`;
 	await mkdir(dir, { recursive: true });

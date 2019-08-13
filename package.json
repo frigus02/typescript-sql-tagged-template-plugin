@@ -21,9 +21,7 @@
 		"@types/jest": "^24.0.17",
 		"@types/node": "^12.7.1",
 		"@types/pg": "^7.4.14",
-		"indent-string": "^4.0.0",
 		"jest": "^24.8.0",
-		"outdent": "^0.7.0",
 		"pg": "^7.12.1",
 		"prettier": "^1.18.2",
 		"typescript": "^3.5.3"
@@ -32,7 +30,7 @@
 		"compile": "tsc",
 		"docker": "docker-compose -f docker/docker-compose.yml up",
 		"docker:attach": "docker exec -it docker_main_1 bash",
-		"generate-pg-query-emscripten-types": "node scripts/pg-query-emscripten-types/generate.js",
+		"generate-pg-query-emscripten-types": "node scripts/pg-query-emscripten-types/index.js",
 		"test": "jest \"build/.+\\.test\\.js$\""
 	}
 }
