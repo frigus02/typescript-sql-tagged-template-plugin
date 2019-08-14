@@ -1,7 +1,6 @@
-const fs = require("fs");
-const { promisify } = require("util");
-const mkdir = promisify(fs.mkdir);
-const writeFile = promisify(fs.writeFile);
+const { mkdir, writeFile } = require("fs").promises;
+const { dirname, join: joinPath } = require("path");
+const prettier = require("prettier");
 
 const typeMap = require("./types.json");
 const enumDefs = require("./enum_defs.json");
@@ -60,7 +59,20 @@ const generateInterfaces = types =>
 		})
 		.join("\n");
 
-const generateTypings = async () => {
+const writeTypeScriptFile = async (pathRelativeToRoot, content) => {
+	const absolutePath = joinPath(__dirname, "../..", pathRelativeToRoot);
+	await mkdir(dirname(absolutePath), { recursive: true });
+
+	const options = await prettier.resolveConfig(absolutePath);
+	const formattedContent = prettier.format(content, {
+		...options,
+		filepath: absolutePath
+	});
+
+	await writeFile(absolutePath, formattedContent, "utf8");
+};
+
+const generateTypeDeclaration = () => {
 	const enums = enumDefsKeys
 		.map(key => enumDefs[key])
 		.map(types => generateEnums(types))
@@ -69,8 +81,7 @@ const generateTypings = async () => {
 		.map(key => structDefs[key])
 		.map(types => generateInterfaces(types))
 		.join("\n");
-
-	const result = `
+	return `
 		declare module "pg-query-emscripten" {
 			interface PgNode {}
 			
@@ -93,13 +104,9 @@ const generateTypings = async () => {
 			function parse(query: string): PgParseResult;
 		}
 	`;
-
-	const dir = `${__dirname}/../../typings/pg-query-emscripten`;
-	await mkdir(dir, { recursive: true });
-	await writeFile(`${dir}/index.d.ts`, result, "utf8");
 };
 
-const generateTypeGuards = async () => {
+const generateTypeGuards = () => {
 	const types = structDefsKeys
 		.map(key => structDefs[key])
 		.flatMap(types => Object.keys(types));
@@ -110,20 +117,22 @@ const generateTypeGuards = async () => {
 				`export const isPg${type} = (obj: PgNode): obj is Pg${type} => !!(<any>obj).${type};`
 		)
 		.join("\n");
-	const result = `
+	return `
 		import { PgNode, ${imports} } from "pg-query-emscripten";
 		export const isPgNodeArray = (obj: PgNode): obj is PgNode[] => Array.isArray(obj);
 		${typeGuards}
 	`;
-
-	const dir = `${__dirname}/../../src/analysis`;
-	await mkdir(dir, { recursive: true });
-	await writeFile(`${dir}/pg-query-emscripten-type-guards.ts`, result, "utf8");
 };
 
 async function main() {
-	await generateTypings();
-	await generateTypeGuards();
+	await writeTypeScriptFile(
+		"typings/pg-query-emscripten/index.d.ts",
+		generateTypeDeclaration()
+	);
+	await writeTypeScriptFile(
+		"src/analysis/pg-query-emscripten-type-guards.ts",
+		generateTypeGuards()
+	);
 }
 
 main().catch(console.error);
