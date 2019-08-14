@@ -1,6 +1,6 @@
 import { getSubstitutions } from "./substitutions";
 
-describe("getSubstitutions", () => {
+describe(getSubstitutions, () => {
 	const templateString =
 		"SELECT * FROM users WHERE id = ${userId} AND age > ${age};";
 

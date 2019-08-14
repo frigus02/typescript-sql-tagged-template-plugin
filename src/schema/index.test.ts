@@ -1,6 +1,6 @@
 import { parseSchema } from "./index";
 
-describe("parseSchema", () => {
+describe(parseSchema, () => {
 	it("returns parsed database schema", () => {
 		expect(parseSchema(`{"public": {"users": {"id": "number"}}}`)).toEqual({
 			public: {
