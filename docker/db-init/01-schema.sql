@@ -2,6 +2,7 @@ CREATE TABLE users (
     user_id integer PRIMARY KEY,
     first_name text NOT NULL,
     last_name text NOT NULL,
+    locales text[] NOT NULL,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL
 );
@@ -16,6 +17,7 @@ CREATE TABLE products (
     product_id integer PRIMARY KEY,
     name text NOT NULL,
     categories product_category[] NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL
 );

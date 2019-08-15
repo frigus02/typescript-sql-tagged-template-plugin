@@ -28,21 +28,19 @@ const sql = (strings, ...values) => ({
 });
 
 const getEnums = async db => {
-	const res = await db.query(
-		sql`
-      SELECT
-        n.nspname AS schema,
-        t.typname AS name,
-        e.enumlabel AS value
-      FROM
-        pg_type t
-        JOIN pg_enum e ON t.oid = e.enumtypid
-        JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-      ORDER BY
-        t.typname ASC,
-        e.enumlabel ASC
-    `
-	);
+	const res = await db.query(sql`
+		SELECT
+			n.nspname AS schema,
+			t.typname AS name,
+			e.enumlabel AS value
+		FROM
+			pg_type t
+			JOIN pg_enum e ON t.oid = e.enumtypid
+			JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+		ORDER BY
+			t.typname ASC,
+			e.enumlabel ASC
+	`);
 
 	const enums = {};
 	for (const row of res.rows) {
@@ -62,44 +60,42 @@ const getEnums = async db => {
 };
 
 const getTables = async db => {
-	const res = await db.query(
-		sql`
-      SELECT
-        c.table_schema AS schema,
-        c.table_name AS table,
-        c.column_name AS column,
-        CASE
-            WHEN c.data_type = 'ARRAY' THEN CASE
-                WHEN e.data_type = 'USER-DEFINED' THEN e.udt_name
-                ELSE e.data_type
-            END
-            WHEN c.data_type = 'USER-DEFINED' THEN c.udt_name
-            ELSE c.data_type
-        END AS type,
-        CASE
-            WHEN c.data_type = 'ARRAY' THEN true
-            ELSE false
-        END AS is_array,
-        CASE
-            WHEN c.is_nullable = 'YES' THEN true
-            ELSE false
-        END AS is_nullable,
-        CASE
-            WHEN c.data_type = 'ARRAY' THEN CASE
-                WHEN e.data_type = 'USER-DEFINED' THEN true
-                ELSE true
-            END
-            WHEN c.data_type = 'USER-DEFINED' THEN true
-            ELSE false
-        END AS is_user_defined
-      FROM
-        information_schema.columns c
-        LEFT JOIN information_schema.element_types e ON (
-            (c.table_catalog,  c.table_schema,  c.table_name, 'TABLE',        c.dtd_identifier) =
-            (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier)
-        )
-    `
-	);
+	const res = await db.query(sql`
+		SELECT
+			c.table_schema AS schema,
+			c.table_name AS table,
+			c.column_name AS column,
+			CASE
+				WHEN c.data_type = 'ARRAY' THEN CASE
+					WHEN e.data_type = 'USER-DEFINED' THEN e.udt_name
+					ELSE e.data_type
+				END
+				WHEN c.data_type = 'USER-DEFINED' THEN c.udt_name
+				ELSE c.data_type
+			END AS type,
+			CASE
+				WHEN c.data_type = 'ARRAY' THEN true
+				ELSE false
+			END AS is_array,
+			CASE
+				WHEN c.is_nullable = 'YES' THEN true
+				ELSE false
+			END AS is_nullable,
+			CASE
+				WHEN c.data_type = 'ARRAY' THEN CASE
+					WHEN e.data_type = 'USER-DEFINED' THEN true
+					ELSE false
+				END
+				WHEN c.data_type = 'USER-DEFINED' THEN true
+				ELSE false
+			END AS is_user_defined
+		FROM
+			information_schema.columns c
+			LEFT JOIN information_schema.element_types e ON (
+				(c.table_catalog,  c.table_schema,  c.table_name, 'TABLE',        c.dtd_identifier) =
+				(e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier)
+			)
+	`);
 
 	const tables = {};
 	for (const row of res.rows) {
