@@ -37,9 +37,11 @@ const getParameterType = (
 	const dbTable = dbSchema && dbSchema[parameter.table];
 	const dbColumn = dbTable && dbTable[parameter.column];
 	if (dbColumn) {
-		return parameter.jsonPath && parameter.jsonPath.isText
-			? "string | null"
-			: dbColumn;
+		const type =
+			parameter.jsonPath && parameter.jsonPath.isText
+				? "string | null"
+				: dbColumn;
+		return parameter.isArray ? `Array<${type}>` : type;
 	}
 };
 
