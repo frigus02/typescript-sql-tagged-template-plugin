@@ -13,6 +13,9 @@
 		"type": "git",
 		"url": "https://github.com/frigus02/typescript-sql-tagged-template-plugin"
 	},
+	"files": [
+		"build"
+	],
 	"dependencies": {
 		"pg-query-emscripten": "^0.1.0",
 		"typescript-template-language-service-decorator": "^2.2.0"
