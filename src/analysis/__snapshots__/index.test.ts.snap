@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`any.sql 1`] = `
+Object {
+  "parameters": Map {
+    1 => Object {
+      "column": "status",
+      "isArray": true,
+      "schema": undefined,
+      "table": "orders",
+    },
+  },
+  "warnings": Array [],
+}
+`;
+
+exports[`select.sql 1`] = `
+Object {
+  "parameters": Map {},
+  "warnings": Array [],
+}
+`;

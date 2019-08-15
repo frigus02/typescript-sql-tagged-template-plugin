@@ -38,6 +38,7 @@ export interface Parameter {
 	schema?: string;
 	table: string;
 	column: string;
+	isArray: boolean;
 	jsonPath?: {
 		path: string | number;
 		isText: boolean;
@@ -87,7 +88,8 @@ const getColumn = (
 
 	return {
 		...relation,
-		column
+		column,
+		isArray: false
 	};
 };
 
@@ -163,11 +165,15 @@ const getParamMapForWhereClause = (
 				if (!operator || !COMPARISON_OPERATORS.includes(operator)) {
 					warnings.push(notSupported("where clause", whereClause));
 				} else if (isPgParamRef(expr.rexpr!)) {
+					const isArray = [
+						PgA_Expr_Kind.AEXPR_OP_ANY,
+						PgA_Expr_Kind.AEXPR_OP_ALL
+					].includes(expr.kind);
 					if (isPgColumnRef(expr.lexpr!)) {
-						params.set(
-							expr.rexpr.ParamRef.number,
-							getColumn(expr.lexpr, relations, warnings)
-						);
+						params.set(expr.rexpr.ParamRef.number, {
+							...getColumn(expr.lexpr, relations, warnings),
+							isArray
+						});
 					} else if (
 						isPgA_Expr(expr.lexpr!) &&
 						JSON_OPERATORS.includes(getOperator(expr.lexpr) || "") &&
@@ -185,7 +191,8 @@ const getParamMapForWhereClause = (
 									? pathVal.String.str!
 									: "<UNKNOWN>",
 								isText: JSON_OPERATORS_RETURNING_TEXT.includes(operator)
-							}
+							},
+							isArray
 						});
 					} else {
 						warnings.push(notSupported("where clause", whereClause));
@@ -234,7 +241,8 @@ export const getParamMapForUpdate = (
 			if (isPgParamRef(target.ResTarget.val!)) {
 				params.set(target.ResTarget.val.ParamRef.number, {
 					...mainRelation,
-					column: target.ResTarget.name!
+					column: target.ResTarget.name!,
+					isArray: false
 				});
 			}
 		} else {
@@ -282,7 +290,8 @@ export const getParamMapForInsert = (
 						if (isPgResTarget(column)) {
 							params.set(value.ParamRef.number, {
 								...mainRelation,
-								column: column.ResTarget.name!
+								column: column.ResTarget.name!,
+								isArray: false
 							});
 						} else {
 							warnings.push(

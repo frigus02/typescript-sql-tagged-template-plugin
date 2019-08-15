@@ -24,6 +24,7 @@
 		"jest": "^24.8.0",
 		"pg": "^7.12.1",
 		"prettier": "^1.18.2",
+		"ts-jest": "^24.0.2",
 		"typescript": "^3.5.3"
 	},
 	"scripts": {
@@ -31,6 +32,6 @@
 		"docker": "docker-compose -f docker/docker-compose.yml up",
 		"docker:schema": "PGHOST=localhost PGUSER=postgres PGPASSWORD=mysecretpassword PGDATABASE=postgres node scripts/schema/index.js schema.json public",
 		"generate-pg-query-emscripten-types": "node scripts/pg-query-emscripten-types/index.js",
-		"test": "jest \"build/.+\\.test\\.js$\""
+		"test": "jest"
 	}
 }
