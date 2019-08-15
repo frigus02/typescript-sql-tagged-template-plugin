@@ -20,7 +20,12 @@ export class TypeChecker {
 
 	getType(node: ts.Node): string {
 		const checker = this.getTypeChecker();
-		return checker.typeToString(checker.getTypeAtLocation(node));
+		const type = checker.getTypeAtLocation(node);
+		return checker.typeToString(
+			type,
+			undefined,
+			this.typescript.TypeFormatFlags.NoTruncation
+		);
 	}
 
 	check(content: string): ts.Diagnostic[] {

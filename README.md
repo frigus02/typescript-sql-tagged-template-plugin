@@ -82,8 +82,3 @@ For queries not specifying any schema name (e.g. `SELECT * FROM users` instead o
 	}
 }
 ```
-
-## Todo
-
-- `WHERE a = ANY (${a})` the plugin finds column of `a`. But it also needs to expose that in this case it expects an array of values.
-- Custom types throw errors in type checker.
