@@ -59,6 +59,7 @@ const getBaseType = (column, enums) => {
 		case "character":
 		case "character varying":
 		case "money":
+		case "numeric":
 		case "text":
 		case "time with time zone":
 		case "time without time zone":
@@ -68,7 +69,6 @@ const getBaseType = (column, enums) => {
 		case "bigserial":
 		case "double precision":
 		case "integer":
-		case "numeric":
 		case "real":
 		case "smallint":
 		case "smallserial":
