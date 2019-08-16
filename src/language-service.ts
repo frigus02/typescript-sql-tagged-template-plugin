@@ -12,6 +12,42 @@ import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { flatten } from "./utils";
 import { ParsedPluginConfiguration } from "./configuration";
 
+const diagnosticMessageCodes = [100_000, 100_001, 100_002, 100_003] as const;
+type DiagnosticMessageCode = typeof diagnosticMessageCodes[number];
+
+interface DiagnosticMessage {
+	messageText: (arg: any) => string;
+	category: keyof typeof ts.DiagnosticCategory;
+}
+
+const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
+	100_000: {
+		messageText: (e: Error) => `Failed to parse: ${e.message}.`,
+		category: "Error"
+	},
+	100_001: {
+		messageText: (e: ParseError) => `Failed to parse: ${e.message}.`,
+		category: "Error"
+	},
+	100_002: {
+		messageText: (p: Parameter) =>
+			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
+		category: "Error"
+	},
+	100_003: {
+		messageText: () =>
+			`Type checking is not supported for this expression, yet.`,
+		category: "Warning"
+	}
+};
+
+const unsupportedTypeScriptErrors = new Set<number>([
+	// "Cannot find name '{0}'."
+	// This happens when the type of the template expression is an interface. I
+	// have not figured out how to do assignment checks for interfaces, yet.
+	2304
+]);
+
 const getTemplateExpressions = (node: ts.TemplateLiteral) =>
 	ts.isTemplateExpression(node)
 		? node.templateSpans.map(span => span.expression)
@@ -49,38 +85,49 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 	const file = context.node.getSourceFile();
 	const source = pluginName;
 
-	const error = ({
+	const any = ({
 		code,
 		messageText,
+		category,
 		start,
 		length
 	}: Pick<
 		ts.Diagnostic,
-		"code" | "messageText" | "start" | "length"
+		"code" | "messageText" | "category" | "start" | "length"
 	>): ts.Diagnostic => ({
 		code,
 		messageText,
-		category: context.typescript.DiagnosticCategory.Error,
-		file,
+		category,
 		start,
 		length,
+		file,
 		source
 	});
 
-	const errorAtExpression = (
-		expression: ts.Expression,
-		{ code, messageText }: Pick<ts.Diagnostic, "code" | "messageText">
-	): ts.Diagnostic =>
-		error({
+	const own = (
+		code: DiagnosticMessageCode,
+		arg: any,
+		pos: Pick<ts.Diagnostic, "start" | "length">
+	) =>
+		any({
 			code,
-			messageText,
-			start: expression.getStart(file) - context.node.getStart(file) - 1,
-			length: expression.getWidth(file)
+			messageText: diagnosticMessages[code].messageText(arg),
+			category:
+				context.typescript.DiagnosticCategory[
+					diagnosticMessages[code].category
+				],
+			...pos
 		});
 
+	const pos = (expression: ts.Expression) => ({
+		start: expression.getStart(file) - context.node.getStart(file) - 1,
+		length: expression.getWidth(file)
+	});
+
 	return {
-		error,
-		errorAtExpression
+		any,
+		own,
+		pos
 	};
 };
 
@@ -99,25 +146,9 @@ export default class SqlTemplateLanguageService
 		try {
 			analysis = analyze(context.text);
 		} catch (e) {
-			if (e instanceof ParseError) {
-				return [
-					factory.error({
-						code: 1001,
-						messageText: `Failed to parse: ${e.message}`,
-						start: e.cursorPosition - 1,
-						length: 1
-					})
-				];
-			} else {
-				return [
-					factory.error({
-						code: 1002,
-						messageText: `Failed to parse: ${e.message}`,
-						start: 0,
-						length: context.text.length
-					})
-				];
-			}
+			return e instanceof ParseError
+				? [factory.own(100_001, e, { start: e.cursorPosition - 1, length: 1 })]
+				: [factory.own(100_000, e, { start: 0, length: context.text.length })];
 		}
 
 		for (const warning of analysis.warnings) {
@@ -144,23 +175,20 @@ export default class SqlTemplateLanguageService
 					this.config.defaultSchemaName
 				);
 				if (!parameterType) {
-					return [
-						factory.errorAtExpression(expression, {
-							code: 1003,
-							messageText: `Cannot find type for parameter ${stringifyParameter(
-								parameter
-							)} in schema`
-						})
-					];
+					return [factory.own(100_002, parameter, factory.pos(expression))];
 				}
 
 				const expressionType = this.typeChecker.getType(expression);
 				const content = `{ let expr: ${expressionType}; let param: ${parameterType} = expr; }`;
 				return this.typeChecker.check(content).map(diagnostic =>
-					factory.errorAtExpression(expression, {
-						code: 1004,
-						messageText: diagnostic.messageText
-					})
+					unsupportedTypeScriptErrors.has(diagnostic.code)
+						? factory.own(100_003, undefined, factory.pos(expression))
+						: factory.any({
+								code: diagnostic.code,
+								messageText: diagnostic.messageText,
+								category: diagnostic.category,
+								...factory.pos(expression)
+						  })
 				);
 			});
 

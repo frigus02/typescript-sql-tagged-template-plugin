@@ -96,6 +96,23 @@ export const getOrdersByShippingCompany = (company: number) => sql(
 		shipment_data ->> 'company' = ${company}
 `;
 
+interface ShipmentData {
+	company: string;
+	other: string;
+	things: number;
+}
+
+export const updateShipmentData = (orderId: number, data: ShipmentData) => sql(
+	"update-shipment-data"
+)`
+	UPDATE
+		orders
+	SET
+		shipment_data = ${data}
+	WHERE
+		order_id = ${orderId}
+`;
+
 export const deleteProduct = (productId: string) => sql("delete-product")`
 	DELETE FROM products WHERE product_id = ${productId}
 `;
