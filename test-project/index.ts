@@ -69,9 +69,11 @@ export const getOutstandingOrdersForUser = (
 		AND o.status IN ('created', ${"packaged"}, 'shipped')
 `;
 
-export const geOrdersByStatus = (
-	statuses: Array<"created" | "packaged" | "received" | "returned" | "shipped">
-) => sql("get-orders-by-status")`
+type Status = "created" | "packaged" | "received" | "returned" | "shipped";
+
+export const geOrdersByStatus = (statuses: Status[]) => sql(
+	"get-orders-by-status"
+)`
 	SELECT
 		*
 	FROM
