@@ -4,15 +4,16 @@ import {
 	TemplateLanguageService
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
-import { pluginName } from "./config";
 import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
-import { TypeChecker } from "./type-checker";
-import { DatabaseSchema, ColumnDefinition } from "./schema";
-import { flatten } from "./utils";
+import { pluginName } from "./config";
 import { ParsedPluginConfiguration } from "./configuration";
+import { DatabaseSchema, ColumnDefinition } from "./schema";
+import { TypeChecker } from "./type-checker";
+import { TypeResolver } from "./type-resolver";
+import { flatten } from "./utils";
 
-const diagnosticMessageCodes = [100_000, 100_001, 100_002, 100_003] as const;
+const diagnosticMessageCodes = [100_000, 100_001, 100_002] as const;
 type DiagnosticMessageCode = typeof diagnosticMessageCodes[number];
 
 interface DiagnosticMessage {
@@ -33,20 +34,8 @@ const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 		messageText: (p: Parameter) =>
 			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
 		category: "Error"
-	},
-	100_003: {
-		messageText: () =>
-			`Type checking is not supported for this expression, yet.`,
-		category: "Warning"
 	}
 };
-
-const unsupportedTypeScriptErrors = new Set<number>([
-	// "Cannot find name '{0}'."
-	// This happens when the type of the template expression is an interface. I
-	// have not figured out how to do assignment checks for interfaces, yet.
-	2304
-]);
 
 const getTemplateExpressions = (node: ts.TemplateLiteral) =>
 	ts.isTemplateExpression(node)
@@ -136,7 +125,8 @@ export default class SqlTemplateLanguageService
 	constructor(
 		private readonly logger: Logger,
 		private readonly config: ParsedPluginConfiguration,
-		private readonly typeChecker: TypeChecker
+		private readonly typeChecker: TypeChecker,
+		private readonly typeResolver: TypeResolver
 	) {}
 
 	getSemanticDiagnostics(context: TemplateContext): ts.Diagnostic[] {
@@ -178,17 +168,15 @@ export default class SqlTemplateLanguageService
 					return [factory.own(100_002, parameter, factory.pos(expression))];
 				}
 
-				const expressionType = this.typeChecker.getType(expression);
+				const expressionType = this.typeResolver.getType(expression);
 				const content = `{ let expr: ${expressionType}; let param: ${parameterType} = expr; }`;
 				return this.typeChecker.check(content).map(diagnostic =>
-					unsupportedTypeScriptErrors.has(diagnostic.code)
-						? factory.own(100_003, undefined, factory.pos(expression))
-						: factory.any({
-								code: diagnostic.code,
-								messageText: diagnostic.messageText,
-								category: diagnostic.category,
-								...factory.pos(expression)
-						  })
+					factory.any({
+						code: diagnostic.code,
+						messageText: diagnostic.messageText,
+						category: diagnostic.category,
+						...factory.pos(expression)
+					})
 				);
 			});
 

@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TypeResolver array.ts 1`] = `"Array<\\"todo\\" | \\"in_progress\\" | \\"finished\\">"`;
+
+exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+
+exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+
+exports[`TypeResolver simple.ts 1`] = `"string"`;
+
+exports[`TypeResolver union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;

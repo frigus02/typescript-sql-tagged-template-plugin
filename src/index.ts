@@ -3,12 +3,13 @@ import {
 	TemplateSettings
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
-import { TypeChecker } from "./type-checker";
-import SqlTemplateLanguageService from "./language-service";
-import { getSubstitutions } from "./substitutions";
-import VirtualServiceHost from "./virtual-service-host";
 import { ParsedPluginConfiguration } from "./configuration";
+import SqlTemplateLanguageService from "./language-service";
 import Logger from "./logger";
+import { getSubstitutions } from "./substitutions";
+import { TypeChecker } from "./type-checker";
+import { TypeResolver } from "./type-resolver";
+import VirtualServiceHost from "./virtual-service-host";
 
 const pluginMarker = Symbol("__sqlTaggedTemplatePluginMarker__");
 
@@ -33,16 +34,16 @@ class SqlTaggedTemplatePlugin {
 			{ ...info.languageServiceHost.getCompilationSettings(), plugins: [] },
 			info.project.getCurrentDirectory()
 		);
-		const diagnostics = new TypeChecker(
-			this.typescript,
-			virtualServiceHost,
-			() => info.languageService.getProgram()!.getTypeChecker()
+		const typeChecker = new TypeChecker(this.typescript, virtualServiceHost);
+		const typeResolver = new TypeResolver(this.typescript, () =>
+			info.languageService.getProgram()!.getTypeChecker()
 		);
 
 		const sqlTemplateLanguageService = new SqlTemplateLanguageService(
 			logger,
 			this.config,
-			diagnostics
+			typeChecker,
+			typeResolver
 		);
 
 		const templateSettings: TemplateSettings = {
