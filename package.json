@@ -21,10 +21,10 @@
 		"typescript-template-language-service-decorator": "^2.2.0"
 	},
 	"devDependencies": {
-		"@types/jest": "^24.0.17",
-		"@types/node": "^12.7.1",
-		"@types/pg": "^7.4.14",
-		"jest": "^24.8.0",
+		"@types/jest": "^24.0.18",
+		"@types/node": "^12.7.2",
+		"@types/pg": "^7.11.0",
+		"jest": "^24.9.0",
 		"pg": "^7.12.1",
 		"prettier": "^1.18.2",
 		"ts-jest": "^24.0.2",
