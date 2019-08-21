@@ -56,40 +56,47 @@ const getTypeName = (
 	checker: ts.TypeChecker,
 	type: ts.Type
 ): string => {
-	if (type.symbol && type.symbol.flags & typescript.SymbolFlags.Interface) {
+	if (
+		type.symbol &&
+		type.symbol.flags & typescript.SymbolFlags.Interface &&
+		type.symbol.escapedName === "Array"
+	) {
 		const typeArgumentNames = getTypeArgumentNames(typescript, checker, type);
-		if (type.symbol.escapedName === "Array") {
-			return `Array<${typeArgumentNames.join(", ")}>`;
-		} else {
-			let name = "{ ";
-			if (type.symbol.members) {
-				const members = getSymbolTableValues(type.symbol.members);
-				const typeParamTypes: { [key: string]: string | undefined } = members
-					.filter(member => member.flags & typescript.SymbolFlags.TypeParameter)
-					.map((member, i) => [
-						member.escapedName as string,
-						typeArgumentNames[i]
-					])
-					.reduce((acc, [name, type]) => ({ ...acc, [name]: type }), {});
+		return `Array<${typeArgumentNames.join(", ")}>`;
+	} else if (
+		type.symbol &&
+		(type.symbol.flags & typescript.SymbolFlags.Interface ||
+			type.symbol.flags & typescript.SymbolFlags.TypeLiteral)
+	) {
+		const typeArgumentNames = getTypeArgumentNames(typescript, checker, type);
+		let name = "{ ";
+		if (type.symbol.members) {
+			const members = getSymbolTableValues(type.symbol.members);
+			const typeParamTypes: { [key: string]: string | undefined } = members
+				.filter(member => member.flags & typescript.SymbolFlags.TypeParameter)
+				.map((member, i) => [
+					member.escapedName as string,
+					typeArgumentNames[i]
+				])
+				.reduce((acc, [name, type]) => ({ ...acc, [name]: type }), {});
 
-				for (const member of members.filter(
-					member => member.flags & typescript.SymbolFlags.Property
-				)) {
-					let memberType = getNodeTypeName(
-						typescript,
-						checker,
-						member.valueDeclaration
-					);
-					if (typeParamTypes[memberType]) {
-						memberType = typeParamTypes[memberType]!;
-					}
-
-					name += `${member.escapedName}: ${memberType}; `;
+			for (const member of members.filter(
+				member => member.flags & typescript.SymbolFlags.Property
+			)) {
+				let memberType = getNodeTypeName(
+					typescript,
+					checker,
+					member.valueDeclaration
+				);
+				if (typeParamTypes[memberType]) {
+					memberType = typeParamTypes[memberType]!;
 				}
+
+				name += `${member.escapedName}: ${memberType}; `;
 			}
-			name += "}";
-			return name;
 		}
+		name += "}";
+		return name;
 	} else if (type.isUnionOrIntersection()) {
 		return getUnionTypeName(typescript, checker, type);
 	} else {

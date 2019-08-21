@@ -8,7 +8,7 @@ exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3
 
 exports[`TypeResolver interface-union.ts 1`] = `"{ prop1: string; } | { prop2: string; }"`;
 
-exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; }"`;
+exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<\\"Apple\\" | \\"Pear\\" | \\"Other\\">; }; }"`;
 
 exports[`TypeResolver simple.ts 1`] = `"string"`;
 
