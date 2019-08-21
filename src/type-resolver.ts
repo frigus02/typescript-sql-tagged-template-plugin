@@ -42,7 +42,7 @@ const getTypeArgumentNames = (
 			const rtype = <ts.TypeReference>type;
 			if (rtype.typeArguments) {
 				return rtype.typeArguments.map(arg =>
-					getSimpleTypeName(typescript, checker, arg)
+					getTypeName(typescript, checker, arg)
 				);
 			}
 		}

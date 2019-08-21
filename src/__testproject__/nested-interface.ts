@@ -5,7 +5,7 @@ interface Address {
 
 interface User {
 	name: string;
-	address: Address;
+	addresses: Address[];
 }
 
 export const query = (a: User) => `${a}`;
