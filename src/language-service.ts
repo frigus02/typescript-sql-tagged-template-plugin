@@ -13,7 +13,7 @@ import { TypeChecker } from "./type-checker";
 import { TypeResolver } from "./type-resolver";
 import { flatten } from "./utils";
 
-const diagnosticMessageCodes = [100_000, 100_001, 100_002] as const;
+const diagnosticMessageCodes = [100_000, 100_001, 100_002, 100_003] as const;
 type DiagnosticMessageCode = typeof diagnosticMessageCodes[number];
 
 interface DiagnosticMessage {
@@ -34,8 +34,22 @@ const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 		messageText: (p: Parameter) =>
 			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
 		category: "Error"
+	},
+	100_003: {
+		messageText: (originalMessage: string) =>
+			`There was an issue type checking this expression. Original error: ${originalMessage}`,
+		category: "Warning"
 	}
 };
+
+const unsupportedTypeScriptErrors = new Set<number>([
+	// "Cannot find name '{0}'."
+	// The plugin tries to resolve all type names and create a literal type.
+	// This type is then checked against the type from the DB schema. If we get
+	// this error, it most likely means not all type names were resolved
+	// correctly.
+	2304
+]);
 
 const getTemplateExpressions = (node: ts.TemplateLiteral) =>
 	ts.isTemplateExpression(node)
@@ -171,12 +185,18 @@ export default class SqlTemplateLanguageService
 				const expressionType = this.typeResolver.getType(expression);
 				const content = `{ let expr: ${expressionType}; let param: ${parameterType} = expr; }`;
 				return this.typeChecker.check(content).map(diagnostic =>
-					factory.any({
-						code: diagnostic.code,
-						messageText: diagnostic.messageText,
-						category: diagnostic.category,
-						...factory.pos(expression)
-					})
+					unsupportedTypeScriptErrors.has(diagnostic.code)
+						? factory.own(
+								100_003,
+								diagnostic.messageText,
+								factory.pos(expression)
+						  )
+						: factory.any({
+								code: diagnostic.code,
+								messageText: diagnostic.messageText,
+								category: diagnostic.category,
+								...factory.pos(expression)
+						  })
 				);
 			});
 
