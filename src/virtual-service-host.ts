@@ -25,7 +25,7 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 	}
 
 	getScriptKind() {
-		return ts.ScriptKind.TS;
+		return this.typescript.ScriptKind.TS;
 	}
 
 	getScriptVersion() {
@@ -37,7 +37,7 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 			? this.typescript.sys.readFile(fileName)
 			: this.files.get(fileName);
 		if (fileText) {
-			return ts.ScriptSnapshot.fromString(fileText);
+			return this.typescript.ScriptSnapshot.fromString(fileText);
 		}
 	}
 

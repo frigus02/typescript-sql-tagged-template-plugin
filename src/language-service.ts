@@ -51,8 +51,11 @@ const unsupportedTypeScriptErrors = new Set<number>([
 	2304
 ]);
 
-const getTemplateExpressions = (node: ts.TemplateLiteral) =>
-	ts.isTemplateExpression(node)
+const getTemplateExpressions = (
+	typescript: typeof ts,
+	node: ts.TemplateLiteral
+) =>
+	typescript.isTemplateExpression(node)
 		? node.templateSpans.map(span => span.expression)
 		: [];
 
@@ -166,7 +169,10 @@ export default class SqlTemplateLanguageService
 			return [];
 		}
 
-		const expressions = getTemplateExpressions(context.node);
+		const expressions = getTemplateExpressions(
+			context.typescript,
+			context.node
+		);
 		const diagnostics = Array.from(analysis.parameters.entries())
 			.map(([index, parameter]) => ({
 				expression: expressions[index - 1],
