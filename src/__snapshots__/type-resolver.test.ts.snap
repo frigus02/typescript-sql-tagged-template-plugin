@@ -6,6 +6,10 @@ exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: numbe
 
 exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
 
+exports[`TypeResolver interface-union.ts 1`] = `"{ prop1: string; } | { prop2: string; }"`;
+
+exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; address: { street: string; city: string; }; }"`;
+
 exports[`TypeResolver simple.ts 1`] = `"string"`;
 
 exports[`TypeResolver union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;

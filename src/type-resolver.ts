@@ -10,7 +10,7 @@ const getSymbolTableValues = (table: ts.SymbolTable) => {
 	return values;
 };
 
-const getTypeName = (
+const getSimpleTypeName = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
 	type: ts.Type
@@ -21,6 +21,15 @@ const getTypeName = (
 		typescript.TypeFormatFlags.InTypeAlias |
 			typescript.TypeFormatFlags.NoTruncation
 	);
+
+const getUnionTypeName = (
+	typescript: typeof ts,
+	checker: ts.TypeChecker,
+	type: ts.UnionOrIntersectionType
+) =>
+	type.types
+		.map(type => getTypeName(typescript, checker, type))
+		.join(type.isUnion() ? " | " : " & ");
 
 const getTypeArgumentNames = (
 	typescript: typeof ts,
@@ -33,7 +42,7 @@ const getTypeArgumentNames = (
 			const rtype = <ts.TypeReference>type;
 			if (rtype.typeArguments) {
 				return rtype.typeArguments.map(arg =>
-					getTypeName(typescript, checker, arg)
+					getSimpleTypeName(typescript, checker, arg)
 				);
 			}
 		}
@@ -42,12 +51,11 @@ const getTypeArgumentNames = (
 	return [];
 };
 
-const getNodeTypeName = (
+const getTypeName = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
-	node: ts.Node
+	type: ts.Type
 ): string => {
-	const type = checker.getTypeAtLocation(node);
 	if (type.symbol && type.symbol.flags & typescript.SymbolFlags.Interface) {
 		const typeArgumentNames = getTypeArgumentNames(typescript, checker, type);
 		if (type.symbol.escapedName === "Array") {
@@ -82,9 +90,20 @@ const getNodeTypeName = (
 			name += "}";
 			return name;
 		}
+	} else if (type.isUnionOrIntersection()) {
+		return getUnionTypeName(typescript, checker, type);
 	} else {
-		return getTypeName(typescript, checker, type);
+		return getSimpleTypeName(typescript, checker, type);
 	}
+};
+
+const getNodeTypeName = (
+	typescript: typeof ts,
+	checker: ts.TypeChecker,
+	node: ts.Node
+): string => {
+	const type = checker.getTypeAtLocation(node);
+	return getTypeName(typescript, checker, type);
 };
 
 export class TypeResolver {
