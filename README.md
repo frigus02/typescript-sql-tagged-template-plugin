@@ -13,9 +13,9 @@ TypeScript server plugin that adds type checking for SQL queries tagged with an 
 
 This plugin can provides SQL syntax errors and type checking in TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com) and any other editor using supporting TypeScript language server plugins.
 
-<!-- ### With VS Code
+### With VS Code
 
-The simplest way to use this plugin is through the [SQL tagged template literals](https://marketplace.visualstudio.com/items?itemName=frigus02.vscode-sql-tagged-template-literals) extension. This extension automatically enables the plugin, and also adds syntax highlighting for SQL template strings and synchronization of settings between VS Code and the plugin. -->
+The simplest way to use this plugin is through the [SQL tagged template literals](https://marketplace.visualstudio.com/items?itemName=frigus02.vscode-sql-tagged-template-literals) extension. This extension automatically enables the plugin, and also adds syntax highlighting for SQL template strings and synchronization of settings between VS Code and the plugin.
 
 ### Other editors
 
@@ -43,7 +43,7 @@ Then restart the TS language server.
 
 ## Configuration
 
-<!-- If you are using the [SQL tagged template literals](https://marketplace.visualstudio.com/items?itemName=frigus02.vscode-sql-tagged-template-literals) extension for VS Code, you can configure these settings in the editor settings. -->
+If you are using the [SQL tagged template literals](https://marketplace.visualstudio.com/items?itemName=frigus02.vscode-sql-tagged-template-literals) extension for VS Code, you can configure these settings in the editor settings.
 
 Otherwise you can configure the behavior of this plugin in the `plugins` section of in your `tsconfig`.
 
