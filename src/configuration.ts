@@ -1,4 +1,4 @@
-import { join as joinPath } from "path";
+import { resolve as resolvePath } from "path";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { DatabaseSchema, parseSchema } from "./schema";
 import { Logger } from "typescript-template-language-service-decorator";
@@ -26,7 +26,7 @@ export class ParsedPluginConfiguration {
 
 		this.schema = undefined;
 		if (config.schemaFile) {
-			const fullPath = joinPath(
+			const fullPath = resolvePath(
 				this.project.getCurrentDirectory(),
 				config.schemaFile
 			);
