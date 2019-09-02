@@ -22,19 +22,25 @@ const getSimpleTypeName = (
 			typescript.TypeFormatFlags.NoTruncation
 	);
 
-const getUnionTypeName = (
+const getUnionOrIntersectionTypeName = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
-	type: ts.UnionOrIntersectionType
+	type: ts.UnionOrIntersectionType,
+	seenTypes: Set<ts.Type>,
+	resolvedTypes: Map<ts.Type, string>
 ) =>
 	type.types
-		.map(type => getTypeName(typescript, checker, type))
+		.map(type =>
+			getTypeName(typescript, checker, type, seenTypes, resolvedTypes)
+		)
 		.join(type.isUnion() ? " | " : " & ");
 
 const getTypeArgumentNames = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
-	type: ts.Type
+	type: ts.Type,
+	seenTypes: Set<ts.Type>,
+	resolvedTypes: Map<ts.Type, string>
 ) => {
 	if (type.flags & typescript.TypeFlags.Object) {
 		const otype = <ts.ObjectType>type;
@@ -42,7 +48,7 @@ const getTypeArgumentNames = (
 			const rtype = <ts.TypeReference>type;
 			if (rtype.typeArguments) {
 				return rtype.typeArguments.map(arg =>
-					getTypeName(typescript, checker, arg)
+					getTypeName(typescript, checker, arg, seenTypes, resolvedTypes)
 				);
 			}
 		}
@@ -54,21 +60,46 @@ const getTypeArgumentNames = (
 const getTypeName = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
-	type: ts.Type
+	type: ts.Type,
+	seenTypes: Set<ts.Type>,
+	resolvedTypes: Map<ts.Type, string>
 ): string => {
+	let resolvedType = resolvedTypes.get(type);
+	if (resolvedType) {
+		return resolvedType;
+	}
+
+	if (seenTypes.has(type)) {
+		return "CIRCULAR_REFERENCE";
+	}
+
+	seenTypes.add(type);
+
 	if (
 		type.symbol &&
 		type.symbol.flags & typescript.SymbolFlags.Interface &&
 		type.symbol.escapedName === "Array"
 	) {
-		const typeArgumentNames = getTypeArgumentNames(typescript, checker, type);
-		return `Array<${typeArgumentNames.join(", ")}>`;
+		const typeArgumentNames = getTypeArgumentNames(
+			typescript,
+			checker,
+			type,
+			seenTypes,
+			resolvedTypes
+		);
+		resolvedType = `Array<${typeArgumentNames.join(", ")}>`;
 	} else if (
 		type.symbol &&
 		(type.symbol.flags & typescript.SymbolFlags.Interface ||
 			type.symbol.flags & typescript.SymbolFlags.TypeLiteral)
 	) {
-		const typeArgumentNames = getTypeArgumentNames(typescript, checker, type);
+		const typeArgumentNames = getTypeArgumentNames(
+			typescript,
+			checker,
+			type,
+			seenTypes,
+			resolvedTypes
+		);
 		let name = "{ ";
 		if (type.symbol.members) {
 			const members = getSymbolTableValues(type.symbol.members);
@@ -86,7 +117,9 @@ const getTypeName = (
 				let memberType = getNodeTypeName(
 					typescript,
 					checker,
-					member.valueDeclaration
+					member.valueDeclaration,
+					seenTypes,
+					resolvedTypes
 				);
 				if (typeParamTypes[memberType]) {
 					memberType = typeParamTypes[memberType]!;
@@ -96,21 +129,32 @@ const getTypeName = (
 			}
 		}
 		name += "}";
-		return name;
+		resolvedType = name;
 	} else if (type.isUnionOrIntersection()) {
-		return getUnionTypeName(typescript, checker, type);
+		resolvedType = getUnionOrIntersectionTypeName(
+			typescript,
+			checker,
+			type,
+			seenTypes,
+			resolvedTypes
+		);
 	} else {
-		return getSimpleTypeName(typescript, checker, type);
+		resolvedType = getSimpleTypeName(typescript, checker, type);
 	}
+
+	resolvedTypes.set(type, resolvedType);
+	return resolvedType;
 };
 
 const getNodeTypeName = (
 	typescript: typeof ts,
 	checker: ts.TypeChecker,
-	node: ts.Node
+	node: ts.Node,
+	seenTypes: Set<ts.Type>,
+	resolvedTypes: Map<ts.Type, string>
 ): string => {
 	const type = checker.getTypeAtLocation(node);
-	return getTypeName(typescript, checker, type);
+	return getTypeName(typescript, checker, type, seenTypes, resolvedTypes);
 };
 
 export class TypeResolver {
@@ -121,6 +165,12 @@ export class TypeResolver {
 
 	getType(node: ts.Node): string {
 		const checker = this.getTypeChecker();
-		return getNodeTypeName(this.typescript, checker, node);
+		return getNodeTypeName(
+			this.typescript,
+			checker,
+			node,
+			new Set(),
+			new Map()
+		);
 	}
 }
