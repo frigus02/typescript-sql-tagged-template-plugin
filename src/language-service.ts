@@ -42,7 +42,7 @@ const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 	}
 };
 
-const unsupportedTypeScriptErrors = new Set<number>([
+const unsupportedTypeScriptErrors = new Set([
 	// "Cannot find name '{0}'."
 	// The plugin tries to resolve all type names and create a literal type.
 	// This type is then checked against the type from the DB schema. If we get

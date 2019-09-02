@@ -26,6 +26,8 @@ exports[`TypeResolver interface-union.ts 1`] = `"{ prop1: string; } | { prop2: s
 
 exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<\\"Apple\\" | \\"Pear\\" | \\"Other\\">; }; }"`;
 
+exports[`TypeResolver nullable.ts 1`] = `"undefined | string"`;
+
 exports[`TypeResolver simple.ts 1`] = `"string"`;
 
 exports[`TypeResolver union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;

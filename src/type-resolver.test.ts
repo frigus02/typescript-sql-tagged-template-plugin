@@ -19,7 +19,9 @@ describe(TypeResolver, () => {
 			const path = joinPath(testProjectDir, file);
 			const program = ts.createProgram({
 				rootNames: [path],
-				options: {}
+				options: {
+					strict: true
+				}
 			});
 			const source = program.getSourceFile(path);
 			if (!source) {
