@@ -1,33 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TypeResolver array.ts 1`] = `"Array<\\"todo\\" | \\"in_progress\\" | \\"finished\\">"`;
+exports[`TypeResolver getType array.ts 1`] = `"Array<\\"todo\\" | \\"in_progress\\" | \\"finished\\">"`;
 
-exports[`TypeResolver builtin-arraybuffer.ts 1`] = `"ArrayBuffer"`;
+exports[`TypeResolver getType builtin-arraybuffer.ts 1`] = `"ArrayBuffer"`;
 
-exports[`TypeResolver builtin-bigint.ts 1`] = `"BigInt"`;
+exports[`TypeResolver getType builtin-bigint.ts 1`] = `"BigInt"`;
 
-exports[`TypeResolver builtin-boolean.ts 1`] = `"Boolean"`;
+exports[`TypeResolver getType builtin-boolean.ts 1`] = `"Boolean"`;
 
-exports[`TypeResolver builtin-buffer.ts 1`] = `"Buffer"`;
+exports[`TypeResolver getType builtin-buffer.ts 1`] = `"Buffer"`;
 
-exports[`TypeResolver builtin-date.ts 1`] = `"Date"`;
+exports[`TypeResolver getType builtin-date.ts 1`] = `"Date"`;
 
-exports[`TypeResolver builtin-number.ts 1`] = `"Number"`;
+exports[`TypeResolver getType builtin-number.ts 1`] = `"Number"`;
 
-exports[`TypeResolver builtin-object.ts 1`] = `"Object"`;
+exports[`TypeResolver getType builtin-object.ts 1`] = `"Object"`;
 
-exports[`TypeResolver builtin-string.ts 1`] = `"String"`;
+exports[`TypeResolver getType builtin-string.ts 1`] = `"String"`;
 
-exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+exports[`TypeResolver getType generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
 
-exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+exports[`TypeResolver getType interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
 
-exports[`TypeResolver interface-union.ts 1`] = `"{ prop1: string; } | { prop2: string; }"`;
+exports[`TypeResolver getType interface-union.ts 1`] = `"{ prop1: string; } | { prop2: string; }"`;
 
-exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<\\"Apple\\" | \\"Pear\\" | \\"Other\\">; }; }"`;
+exports[`TypeResolver getType nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<\\"Apple\\" | \\"Pear\\" | \\"Other\\">; }; }"`;
 
-exports[`TypeResolver nullable.ts 1`] = `"undefined | string"`;
+exports[`TypeResolver getType nullable.ts 1`] = `"undefined | string"`;
 
-exports[`TypeResolver simple.ts 1`] = `"string"`;
+exports[`TypeResolver getType simple.ts 1`] = `"string"`;
 
-exports[`TypeResolver union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;
+exports[`TypeResolver getType union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;
+
+exports[`TypeResolver getTypeOfFirstTypeArgument interface.ts 1`] = `"{ name: string; }"`;
+
+exports[`TypeResolver getTypeOfFirstTypeArgument no-type.ts 1`] = `undefined`;

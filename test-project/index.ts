@@ -1,23 +1,17 @@
-export interface Query {
-	name?: string;
-	text: string;
-	values: any[];
+import { findOne, sql } from "./query";
+
+type Status = "created" | "packaged" | "received" | "returned" | "shipped";
+
+interface Order {
+	order_id: number;
+	user_id: number;
 }
 
-export const sql = (name: string) => (
-	strings: TemplateStringsArray,
-	...values: any[]
-): Query => ({
-	name,
-	text: String.raw(strings, ...values.map((_, i) => `$${i + 1}`)),
-	values
-});
-
-export const createOrder = (userId: string, notes: string | null) => sql(
+export const createOrder = (userId: number, notes: string | null) => sql<Order>(
 	"create-order"
 )`
 	INSERT INTO orders(
-		user_id
+		user_id,
 		notes,
 		status,
 		created_at,
@@ -32,14 +26,14 @@ export const createOrder = (userId: string, notes: string | null) => sql(
 	RETURNING *
 `;
 
-export const updateOrderStatus = (orderId: number, newStatus: string) => sql(
+export const updateOrderStatus = (orderId: number, newStatus: Status) => sql(
 	"update-order-status"
 )`
 	UPDATE
 		orders
 	SET
 		status = ${newStatus},
-		updated_at = ${new Date().toISOString()}
+		updated_at = ${new Date()}
 	WHERE
 		order_id = ${orderId}
 `;
@@ -50,7 +44,7 @@ export const getOrder = (orderId: number) => sql("get-order")`
 
 export const getOutstandingOrdersForUser = (
 	orderId: number,
-	userId: string
+	userId: number
 ) => sql("get-outstanding-orders-for-user")`
 	SELECT
 		o.order_id,
@@ -65,11 +59,9 @@ export const getOutstandingOrdersForUser = (
 		LEFT JOIN users u ON o.user_id = u.user_id
 	WHERE
 		o.order_id = ${orderId}
-		AND o.userid = ${userId}
+		AND o.user_id = ${userId}
 		AND o.status IN ('created', ${"packaged"}, 'shipped')
 `;
-
-type Status = "created" | "packaged" | "received" | "returned" | "shipped";
 
 export const geOrdersByStatus = (statuses: Status[]) => sql(
 	"get-orders-by-status"
@@ -82,7 +74,7 @@ export const geOrdersByStatus = (statuses: Status[]) => sql(
 		status = ANY (${statuses})
 `;
 
-export const getOrdersByShippingCompany = (company: number) => sql(
+export const getOrdersByShippingCompany = (company: string) => sql(
 	"get-orders-by-shipping-company"
 )`
 	SELECT
@@ -113,6 +105,13 @@ export const updateShipmentData = (orderId: number, data: ShipmentData) => sql(
 		order_id = ${orderId}
 `;
 
-export const deleteProduct = (productId: string) => sql("delete-product")`
+export const deleteProduct = (productId: number) => sql("delete-product")`
 	DELETE FROM products WHERE product_id = ${productId}
 `;
+
+(async () => {
+	const order = await findOne(createOrder(1, ""));
+	if (order) {
+		order.order_id;
+	}
+})();

@@ -8,7 +8,7 @@ pg-query-emscripten@^0.1.0:
   integrity sha512-Awwf0s6gyVZEmZeMLXnXZOIQveqVEBFhxMkR0UcMmijwX/y9FW1od71X1hNRtGFWrU/ML5sxerZyH20pvpLGuA==
 
 "typescript-sql-tagged-template-plugin@file:./..":
-  version "0.0.1"
+  version "0.0.12"
   dependencies:
     pg-query-emscripten "^0.1.0"
     typescript-template-language-service-decorator "^2.2.0"

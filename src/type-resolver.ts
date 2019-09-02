@@ -190,4 +190,19 @@ export class TypeResolver {
 			new Map()
 		);
 	}
+
+	getTypeOfFirstTypeArgument(node: ts.Node): string | undefined {
+		const checker = this.getTypeChecker();
+		const type = checker.getTypeAtLocation(node);
+		const typeArgumentNames = getTypeArgumentNames(
+			this.typescript,
+			checker,
+			type,
+			new Set(),
+			new Map()
+		);
+		if (typeArgumentNames.length === 1) {
+			return typeArgumentNames[0];
+		}
+	}
 }

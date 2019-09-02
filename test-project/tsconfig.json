@@ -2,7 +2,9 @@
 	"compilerOptions": {
 		"target": "es2015",
 		"module": "commonjs",
-		"lib": [],
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
 		"plugins": [
 			{
 				"name": "/Users/jkuehle/Projects/typescript-sql-tagged-template-plugin/build",
