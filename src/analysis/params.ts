@@ -4,7 +4,6 @@ import {
 	PgDeleteStmt,
 	PgInsertStmt,
 	PgNode,
-	PgRangeVar,
 	PgSelectStmt,
 	PgUpdateStmt,
 	PgA_Expr
@@ -14,25 +13,25 @@ import {
 	isPgA_Expr,
 	isPgBoolExpr,
 	isPgColumnRef,
-	isPgJoinExpr,
 	isPgNodeArray,
 	isPgNullTest,
 	isPgParamRef,
-	isPgRangeVar,
 	isPgResTarget,
 	isPgSelectStmt,
 	isPgString,
 	isPgSubLink,
 	isPgInteger
 } from "./pg-query-emscripten-type-guards";
+import {
+	Alias,
+	Relation,
+	getRelation,
+	getRelationsForDelete,
+	getRelationsForSelect,
+	getRelationsForUpdate
+} from "./relation";
 import { assignMap, notSupported, other, Warning } from "./utils";
-
-type Alias = string;
-
-interface Relation {
-	schema?: string;
-	table: string;
-}
+import { getColumn } from "./column";
 
 export interface Parameter {
 	schema?: string;
@@ -49,78 +48,22 @@ const COMPARISON_OPERATORS = ["<", ">", "<=", ">=", "=", "<>"];
 const JSON_OPERATORS = ["->", "->>", "#>", "#>>"];
 const JSON_OPERATORS_RETURNING_TEXT = ["->>", "#>>"];
 
-const getColumn = (
+const getParameter = (
 	columnRef: PgColumnRef,
 	relations: Map<Alias, Relation>,
 	warnings: Warning[]
 ): Parameter => {
-	if (columnRef.ColumnRef.fields!.length === 0) {
-		throw new Error(`ColumnRef has no fields: ${JSON.stringify(columnRef)}`);
-	}
-
-	if (columnRef.ColumnRef.fields!.length > 2) {
-		warnings.push(other("ColumnRef has more then 2 fields", columnRef));
-	}
-
-	const getField = (field: PgNode) => {
-		if (isPgString(field)) {
-			return field.String.str!;
-		} else {
-			throw new Error(
-				`ColumnRef field has no name: ${JSON.stringify(columnRef)}`
-			);
-		}
-	};
-
-	let relation: Relation;
-	let column: string;
-	if (columnRef.ColumnRef.fields!.length == 1) {
-		relation =
-			relations.size === 1
-				? Array.from(relations.values())[0]
-				: relations.get("") || { table: "<NOT FOUND>" };
-		column = getField(columnRef.ColumnRef.fields![0]);
-	} else {
-		const tableOrAlias = getField(columnRef.ColumnRef.fields![0]);
-		relation = relations.get(tableOrAlias) || { table: tableOrAlias };
-		column = getField(columnRef.ColumnRef.fields![1]);
+	const column = getColumn(columnRef, relations, warnings);
+	if (column.column === "*") {
+		throw new Error(
+			`ColumnRef with "*" is not supported: ${JSON.stringify(columnRef)}`
+		);
 	}
 
 	return {
-		...relation,
-		column,
+		...column,
 		isArray: false
 	};
-};
-
-const getRelation = (node: PgRangeVar): Relation => ({
-	schema: node.RangeVar.schemaname,
-	table: node.RangeVar.relname!
-});
-
-const getRelations = (node: PgNode) => {
-	const relations = new Map<Alias, Relation>();
-
-	if (isPgJoinExpr(node)) {
-		assignMap(
-			relations,
-			getRelations(node.JoinExpr.larg!),
-			getRelations(node.JoinExpr.rarg!)
-		);
-	} else if (isPgRangeVar(node)) {
-		relations.set(
-			node.RangeVar.alias ? node.RangeVar.alias.Alias.aliasname! : "",
-			getRelation(node)
-		);
-	}
-
-	return relations;
-};
-
-const getRelationsForFromClause = (fromClause: PgNode[]) => {
-	const relations = new Map<Alias, Relation>();
-	assignMap(relations, ...fromClause.map(getRelations));
-	return relations;
 };
 
 const getOperator = (expr: PgA_Expr) => {
@@ -145,7 +88,7 @@ const getParamMapForWhereClause = (
 			case PgA_Expr_Kind.AEXPR_IN:
 				if (isPgNodeArray(expr.rexpr!)) {
 					if (isPgColumnRef(expr.lexpr!)) {
-						const column = getColumn(expr.lexpr, relations, warnings);
+						const column = getParameter(expr.lexpr, relations, warnings);
 						for (const field of expr.rexpr) {
 							if (isPgParamRef(field)) {
 								params.set(field.ParamRef.number, column);
@@ -171,7 +114,7 @@ const getParamMapForWhereClause = (
 					].includes(expr.kind);
 					if (isPgColumnRef(expr.lexpr!)) {
 						params.set(expr.rexpr.ParamRef.number, {
-							...getColumn(expr.lexpr, relations, warnings),
+							...getParameter(expr.lexpr, relations, warnings),
 							isArray
 						});
 					} else if (
@@ -183,7 +126,7 @@ const getParamMapForWhereClause = (
 						const operator = getOperator(expr.lexpr)!;
 						const pathVal = expr.lexpr.A_Expr.rexpr.A_Const.val;
 						params.set(expr.rexpr.ParamRef.number, {
-							...getColumn(expr.lexpr.A_Expr.lexpr, relations, warnings),
+							...getParameter(expr.lexpr.A_Expr.lexpr, relations, warnings),
 							jsonPath: {
 								path: isPgInteger(pathVal)
 									? pathVal.Integer.ival
@@ -251,14 +194,7 @@ export const getParamMapForUpdate = (
 	}
 
 	if (stmt.UpdateStmt.whereClause) {
-		const relations = getRelations(stmt.UpdateStmt.relation!);
-		if (stmt.UpdateStmt.fromClause) {
-			assignMap(
-				relations,
-				getRelationsForFromClause(stmt.UpdateStmt.fromClause)
-			);
-		}
-
+		const relations = getRelationsForUpdate(stmt);
 		assignMap(
 			params,
 			getParamMapForWhereClause(
@@ -277,8 +213,8 @@ export const getParamMapForInsert = (
 	warnings: Warning[]
 ) => {
 	const params = new Map<number, Parameter>();
-	const mainRelation = getRelation(stmt.InsertStmt.relation!);
 
+	const mainRelation = getRelation(stmt.InsertStmt.relation!);
 	if (isPgSelectStmt(stmt.InsertStmt.selectStmt!)) {
 		const select = stmt.InsertStmt.selectStmt.SelectStmt;
 		if (select.valuesLists && stmt.InsertStmt.cols) {
@@ -317,12 +253,7 @@ export const getParamMapForSelect = (
 	const params = new Map<number, Parameter>();
 
 	const relations = new Map<Alias, Relation>();
-	assignMap(
-		relations,
-		parentRelations,
-		stmt.SelectStmt.fromClause &&
-			getRelationsForFromClause(stmt.SelectStmt.fromClause)
-	);
+	assignMap(relations, parentRelations, getRelationsForSelect(stmt));
 
 	if (stmt.SelectStmt.whereClause) {
 		assignMap(
@@ -345,7 +276,7 @@ export const getParamMapForDelete = (
 	const params = new Map<number, Parameter>();
 
 	if (stmt.DeleteStmt.whereClause) {
-		const relations = getRelations(stmt.DeleteStmt.relation!);
+		const relations = getRelationsForDelete(stmt);
 		assignMap(
 			params,
 			getParamMapForWhereClause(

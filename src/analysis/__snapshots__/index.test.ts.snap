@@ -10,6 +10,14 @@ Object {
       "table": "orders",
     },
   },
+  "returnValues": Array [
+    Object {
+      "alias": undefined,
+      "schema": undefined,
+      "table": "orders",
+      "type": "star",
+    },
+  ],
   "warnings": Array [],
 }
 `;
@@ -28,6 +36,29 @@ Object {
       "table": "orders",
     },
   },
+  "returnValues": Array [
+    Object {
+      "alias": undefined,
+      "column": "order_id",
+      "schema": undefined,
+      "table": "orders",
+      "type": "column",
+    },
+    Object {
+      "alias": undefined,
+      "column": "notes",
+      "schema": undefined,
+      "table": "orders",
+      "type": "column",
+    },
+    Object {
+      "alias": undefined,
+      "column": "status",
+      "schema": undefined,
+      "table": "orders",
+      "type": "column",
+    },
+  ],
   "warnings": Array [],
 }
 `;
@@ -35,6 +66,14 @@ Object {
 exports[`select.sql 1`] = `
 Object {
   "parameters": Map {},
+  "returnValues": Array [
+    Object {
+      "alias": undefined,
+      "constType": "integer",
+      "type": "const",
+      "value": 1,
+    },
+  ],
   "warnings": Array [],
 }
 `;
