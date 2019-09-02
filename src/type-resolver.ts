@@ -1,5 +1,19 @@
 import * as ts from "typescript/lib/tsserverlibrary";
 
+const BUILT_IN_TYPES = new Set([
+	"ArrayBuffer",
+	"Buffer",
+	"BigInt",
+	"Boolean",
+	"Date",
+	"Number",
+	"Object",
+	"String"
+]);
+
+const isBuiltInType = (simpleTypeName: string) =>
+	BUILT_IN_TYPES.has(simpleTypeName);
+
 const getSymbolTableValues = (table: ts.SymbolTable) => {
 	const values = [];
 	const iter = table.values();
@@ -75,7 +89,10 @@ const getTypeName = (
 
 	seenTypes.add(type);
 
-	if (
+	const simpleTypeName = getSimpleTypeName(typescript, checker, type);
+	if (isBuiltInType(simpleTypeName)) {
+		resolvedType = simpleTypeName;
+	} else if (
 		type.symbol &&
 		type.symbol.flags & typescript.SymbolFlags.Interface &&
 		type.symbol.escapedName === "Array"
@@ -139,7 +156,7 @@ const getTypeName = (
 			resolvedTypes
 		);
 	} else {
-		resolvedType = getSimpleTypeName(typescript, checker, type);
+		resolvedType = simpleTypeName;
 	}
 
 	resolvedTypes.set(type, resolvedType);

@@ -2,6 +2,22 @@
 
 exports[`TypeResolver array.ts 1`] = `"Array<\\"todo\\" | \\"in_progress\\" | \\"finished\\">"`;
 
+exports[`TypeResolver builtin-arraybuffer.ts 1`] = `"ArrayBuffer"`;
+
+exports[`TypeResolver builtin-bigint.ts 1`] = `"BigInt"`;
+
+exports[`TypeResolver builtin-boolean.ts 1`] = `"Boolean"`;
+
+exports[`TypeResolver builtin-buffer.ts 1`] = `"Buffer"`;
+
+exports[`TypeResolver builtin-date.ts 1`] = `"Date"`;
+
+exports[`TypeResolver builtin-number.ts 1`] = `"Number"`;
+
+exports[`TypeResolver builtin-object.ts 1`] = `"Object"`;
+
+exports[`TypeResolver builtin-string.ts 1`] = `"String"`;
+
 exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
 
 exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
