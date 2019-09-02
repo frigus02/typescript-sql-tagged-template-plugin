@@ -14,6 +14,24 @@ Object {
 }
 `;
 
+exports[`json-operator.sql 1`] = `
+Object {
+  "parameters": Map {
+    1 => Object {
+      "column": "shipment_data",
+      "isArray": false,
+      "jsonPath": Object {
+        "isText": true,
+        "path": "company",
+      },
+      "schema": undefined,
+      "table": "orders",
+    },
+  },
+  "warnings": Array [],
+}
+`;
+
 exports[`select.sql 1`] = `
 Object {
   "parameters": Map {},
