@@ -1,6 +1,6 @@
 {
 	"name": "typescript-sql-tagged-template-plugin",
-	"version": "0.0.12",
+	"version": "0.0.14",
 	"description": "TypeScript language service plugin that adds type checking for sql tagged templates",
 	"keywords": [
 		"TypeScript",
@@ -35,6 +35,7 @@
 		"docker": "docker-compose -f docker/docker-compose.yml up",
 		"docker:schema": "PGHOST=localhost PGUSER=postgres PGPASSWORD=mysecretpassword PGDATABASE=postgres node scripts/schema/index.js schema.json public",
 		"generate-pg-query-emscripten-types": "node scripts/pg-query-emscripten-types/index.js",
-		"test": "jest"
+		"test": "jest",
+		"prepublish": "yarn compile"
 	}
 }
