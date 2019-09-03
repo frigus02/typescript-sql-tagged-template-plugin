@@ -1,11 +1,18 @@
 {
-  "name": "test-project",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "private": true,
-  "dependencies": {
-    "typescript": "^3.5.3",
-    "typescript-sql-tagged-template-plugin": "file:./.."
-  }
+	"name": "test-project",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"private": true,
+	"dependencies": {
+		"pg": "^7.12.1"
+	},
+	"devDependencies": {
+		"@types/pg": "^7.11.0",
+		"typescript": "^3.5.3",
+		"typescript-sql-tagged-template-plugin": "file:./.."
+	},
+	"scripts": {
+		"compile": "tsc"
+	}
 }

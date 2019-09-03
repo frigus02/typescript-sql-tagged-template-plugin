@@ -1,18 +1,20 @@
 {
 	"public": {
-		"products": {
-			"categories": "Array<\"Fruit\" | \"Sweets\" | \"Vegetables\">",
-			"created_at": "Date",
-			"name": "string",
-			"updated_at": "Date",
-			"product_id": "number"
-		},
 		"users": {
-			"updated_at": "Date",
+			"locales": "Array<string>",
+			"created_at": "Date",
 			"first_name": "string",
 			"user_id": "number",
-			"last_name": "string",
-			"created_at": "Date"
+			"updated_at": "Date",
+			"last_name": "string"
+		},
+		"products": {
+			"categories": "Array<\"Fruit\" | \"Sweets\" | \"Vegetables\">",
+			"price": "string",
+			"updated_at": "Date",
+			"name": "string",
+			"created_at": "Date",
+			"product_id": "number"
 		},
 		"orders": {
 			"shipment_data": "Object | null",

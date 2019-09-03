@@ -33,7 +33,7 @@
 	"scripts": {
 		"compile": "tsc",
 		"docker": "docker-compose -f docker/docker-compose.yml up",
-		"docker:schema": "PGHOST=localhost PGUSER=postgres PGPASSWORD=mysecretpassword PGDATABASE=postgres node scripts/schema/index.js schema.json public",
+		"docker:schema": "PGHOST=localhost PGUSER=postgres PGPASSWORD=mysecretpassword PGDATABASE=postgres node scripts/schema/index.js public",
 		"pg-query-types": "node scripts/pg-query-emscripten-types/index.js",
 		"test": "jest",
 		"prepublish": "yarn compile"

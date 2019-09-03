@@ -1,34 +1,51 @@
-import { findOne, sql } from "./query";
+import { OrderStatus, User } from "./db-types";
+import { sql } from "./db";
 
-type Status = "created" | "packaged" | "received" | "returned" | "shipped";
-
-interface Order {
-	order_id: number;
-	user_id: number;
-}
-
-export const createOrder = (userId: number, notes: string | null) => sql<Order>(
-	"create-order"
+export const createUser = (first_name: string, last_name: string) => sql<User>(
+	"create-user"
 )`
-	INSERT INTO orders(
+	INSERT INTO users(
 		user_id,
-		notes,
-		status,
+		first_name,
+		last_name,
+		locales,
 		created_at,
 		updated_at
 	) VALUES(
-		${userId},
-		${notes},
-		'created',
+		${Math.floor(Math.random() * 1000)},
+		${first_name},
+		${last_name},
+		${[]},
 		NOW(),
 		NOW()
 	)
 	RETURNING *
 `;
 
-export const updateOrderStatus = (orderId: number, newStatus: Status) => sql(
-	"update-order-status"
+export const createOrder = (userId: number, notes: string) => sql(
+	"create-order"
 )`
+	INSERT INTO orders(
+		order_id,
+		user_id,
+		notes,
+		status,
+		created_at,
+		updated_at
+	) VALUES(
+		${Math.floor(Math.random() * 1000)},
+		${userId},
+		${notes},
+		'created',
+		NOW(),
+		NOW()
+	)
+`;
+
+export const updateOrderStatus = (
+	orderId: number,
+	newStatus: OrderStatus
+) => sql("update-order-status")`
 	UPDATE
 		orders
 	SET
@@ -63,7 +80,7 @@ export const getOutstandingOrdersForUser = (
 		AND o.status IN ('created', ${"packaged"}, 'shipped')
 `;
 
-export const geOrdersByStatus = (statuses: Status[]) => sql(
+export const geOrdersByStatus = (statuses: OrderStatus[]) => sql(
 	"get-orders-by-status"
 )`
 	SELECT
@@ -108,10 +125,3 @@ export const updateShipmentData = (orderId: number, data: ShipmentData) => sql(
 export const deleteProduct = (productId: number) => sql("delete-product")`
 	DELETE FROM products WHERE product_id = ${productId}
 `;
-
-(async () => {
-	const order = await findOne(createOrder(1, ""));
-	if (order) {
-		order.order_id;
-	}
-})();
