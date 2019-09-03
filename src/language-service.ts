@@ -189,7 +189,7 @@ export default class SqlTemplateLanguageService
 				}
 
 				const expressionType = this.typeResolver.getType(expression);
-				const content = `{ let expr: ${expressionType}; let param: ${parameterType} = expr; }`;
+				const content = `{ let expr: ${expressionType} = null as any; let param: ${parameterType} = expr; }`;
 				return this.typeChecker.check(content).map(diagnostic =>
 					unsupportedTypeScriptErrors.has(diagnostic.code)
 						? factory.own(

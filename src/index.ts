@@ -31,7 +31,7 @@ class SqlTaggedTemplatePlugin {
 
 		const virtualServiceHost = new VirtualServiceHost(
 			this.typescript,
-			{ ...info.languageServiceHost.getCompilationSettings(), plugins: [] },
+			{ strict: true },
 			info.project.getCurrentDirectory()
 		);
 		const typeChecker = new TypeChecker(this.typescript, virtualServiceHost);
