@@ -9,6 +9,10 @@ TypeScript server plugin that adds type checking for SQL queries tagged with an 
 - Syntax errors for SQL statements
 - Type checking for expressions in SQL statements
 
+**Limitations**
+
+- Currently only supports PostgreSQL
+
 ## Usage
 
 This plugin can provides SQL syntax errors and type checking in TypeScript files within any editor that uses TypeScript to power their language features. This includes [VS Code](https://code.visualstudio.com) and any other editor using supporting TypeScript language server plugins.
