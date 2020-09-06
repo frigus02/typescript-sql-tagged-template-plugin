@@ -7,7 +7,7 @@ import {
 	PgRangeVar,
 	PgSelectStmt,
 	PgUpdateStmt,
-	PgA_Expr
+	PgA_Expr,
 } from "pg-query-emscripten";
 import {
 	isPgA_Const,
@@ -23,7 +23,7 @@ import {
 	isPgSelectStmt,
 	isPgString,
 	isPgSubLink,
-	isPgInteger
+	isPgInteger,
 } from "./pg-query-emscripten-type-guards";
 import { assignMap, notSupported, other, Warning } from "./utils";
 
@@ -89,13 +89,13 @@ const getColumn = (
 	return {
 		...relation,
 		column,
-		isArray: false
+		isArray: false,
 	};
 };
 
 const getRelation = (node: PgRangeVar): Relation => ({
 	schema: node.RangeVar.schemaname,
-	table: node.RangeVar.relname!
+	table: node.RangeVar.relname!,
 });
 
 const getRelations = (node: PgNode) => {
@@ -167,12 +167,12 @@ const getParamMapForWhereClause = (
 				} else if (isPgParamRef(expr.rexpr!)) {
 					const isArray = [
 						PgA_Expr_Kind.AEXPR_OP_ANY,
-						PgA_Expr_Kind.AEXPR_OP_ALL
+						PgA_Expr_Kind.AEXPR_OP_ALL,
 					].includes(expr.kind);
 					if (isPgColumnRef(expr.lexpr!)) {
 						params.set(expr.rexpr.ParamRef.number, {
 							...getColumn(expr.lexpr, relations, warnings),
-							isArray
+							isArray,
 						});
 					} else if (
 						isPgA_Expr(expr.lexpr!) &&
@@ -190,9 +190,9 @@ const getParamMapForWhereClause = (
 									: isPgString(pathVal)
 									? pathVal.String.str!
 									: "<UNKNOWN>",
-								isText: JSON_OPERATORS_RETURNING_TEXT.includes(operator)
+								isText: JSON_OPERATORS_RETURNING_TEXT.includes(operator),
 							},
-							isArray
+							isArray,
 						});
 					} else {
 						warnings.push(notSupported("where clause", whereClause));
@@ -242,7 +242,7 @@ export const getParamMapForUpdate = (
 				params.set(target.ResTarget.val.ParamRef.number, {
 					...mainRelation,
 					column: target.ResTarget.name!,
-					isArray: false
+					isArray: false,
 				});
 			}
 		} else {
@@ -291,7 +291,7 @@ export const getParamMapForInsert = (
 							params.set(value.ParamRef.number, {
 								...mainRelation,
 								column: column.ResTarget.name!,
-								isArray: false
+								isArray: false,
 							});
 						} else {
 							warnings.push(

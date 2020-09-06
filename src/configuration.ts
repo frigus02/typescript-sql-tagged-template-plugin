@@ -9,7 +9,7 @@ export interface PluginConfiguration {
 }
 
 const defaults = {
-	defaultSchemaName: "public"
+	defaultSchemaName: "public",
 };
 
 export class ParsedPluginConfiguration {

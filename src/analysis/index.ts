@@ -4,14 +4,14 @@ import {
 	isPgInsertStmt,
 	isPgSelectStmt,
 	isPgUpdateStmt,
-	isPgRawStmt
+	isPgRawStmt,
 } from "./pg-query-emscripten-type-guards";
 import {
 	getParamMapForDelete,
 	getParamMapForInsert,
 	getParamMapForSelect,
 	getParamMapForUpdate,
-	Parameter
+	Parameter,
 } from "./params";
 import { notSupported, Warning } from "./utils";
 
@@ -58,7 +58,7 @@ export const analyze = (query: string): Analysis => {
 
 		return {
 			warnings,
-			parameters
+			parameters,
 		};
 	} else {
 		throw new Error("Got no result");

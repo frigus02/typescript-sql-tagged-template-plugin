@@ -8,7 +8,7 @@ const BUILT_IN_TYPES = new Set([
 	"Date",
 	"Number",
 	"Object",
-	"String"
+	"String",
 ]);
 
 const isBuiltInType = (simpleTypeName: string) =>
@@ -44,7 +44,7 @@ const getUnionOrIntersectionTypeName = (
 	resolvedTypes: Map<ts.Type, string>
 ) =>
 	type.types
-		.map(type =>
+		.map((type) =>
 			getTypeName(typescript, checker, type, seenTypes, resolvedTypes)
 		)
 		.join(type.isUnion() ? " | " : " & ");
@@ -61,7 +61,7 @@ const getTypeArgumentNames = (
 		if (otype.objectFlags & typescript.ObjectFlags.Reference) {
 			const rtype = <ts.TypeReference>type;
 			if (rtype.typeArguments) {
-				return rtype.typeArguments.map(arg =>
+				return rtype.typeArguments.map((arg) =>
 					getTypeName(typescript, checker, arg, seenTypes, resolvedTypes)
 				);
 			}
@@ -121,15 +121,15 @@ const getTypeName = (
 		if (type.symbol.members) {
 			const members = getSymbolTableValues(type.symbol.members);
 			const typeParamTypes: { [key: string]: string | undefined } = members
-				.filter(member => member.flags & typescript.SymbolFlags.TypeParameter)
+				.filter((member) => member.flags & typescript.SymbolFlags.TypeParameter)
 				.map((member, i) => [
 					member.escapedName as string,
-					typeArgumentNames[i]
+					typeArgumentNames[i],
 				])
 				.reduce((acc, [name, type]) => ({ ...acc, [name]: type }), {});
 
 			for (const member of members.filter(
-				member => member.flags & typescript.SymbolFlags.Property
+				(member) => member.flags & typescript.SymbolFlags.Property
 			)) {
 				let memberType = getNodeTypeName(
 					typescript,

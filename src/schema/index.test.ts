@@ -5,9 +5,9 @@ describe(parseSchema, () => {
 		expect(parseSchema(`{"public": {"users": {"id": "number"}}}`)).toEqual({
 			public: {
 				users: {
-					id: "number"
-				}
-			}
+					id: "number",
+				},
+			},
 		});
 	});
 

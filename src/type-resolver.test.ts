@@ -20,8 +20,8 @@ describe(TypeResolver, () => {
 			const program = ts.createProgram({
 				rootNames: [path],
 				options: {
-					strict: true
-				}
+					strict: true,
+				},
 			});
 			const source = program.getSourceFile(path);
 			if (!source) {

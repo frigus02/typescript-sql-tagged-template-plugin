@@ -8,19 +8,19 @@ const enumDefsKeys = [
 	"nodes/lockoptions",
 	"nodes/nodes",
 	"nodes/primnodes",
-	"nodes/parsenodes"
+	"nodes/parsenodes",
 ];
 const structDefs = require("./struct_defs.json");
 const structDefsKeys = ["nodes/value", "nodes/primnodes", "nodes/parsenodes"];
 
-const getOptional = c_type => (c_type.endsWith("*") ? "?" : "");
+const getOptional = (c_type) => (c_type.endsWith("*") ? "?" : "");
 
 const getType = (name, c_type) =>
 	name === "valuesLists" ? "PgNode[][]" : typeMap[c_type] || `Pg${c_type}`;
 
-const generateFields = fields =>
+const generateFields = (fields) =>
 	fields
-		.filter(field => field.name && field.name !== "type")
+		.filter((field) => field.name && field.name !== "type")
 		.map(
 			({ name, c_type, comment }) => `
 				${comment || "/**/"}
@@ -29,12 +29,12 @@ const generateFields = fields =>
 		)
 		.join("\n");
 
-const generateEnums = types =>
+const generateEnums = (types) =>
 	Object.keys(types)
-		.map(type => {
+		.map((type) => {
 			const { values, comment } = types[type];
 			const enumValues = values
-				.filter(v => v.name)
+				.filter((v) => v.name)
 				.map((v, i) => `${v.name} = ${i}`)
 				.join(",\n");
 			return `
@@ -45,9 +45,9 @@ const generateEnums = types =>
 		})
 		.join("\n");
 
-const generateInterfaces = types =>
+const generateInterfaces = (types) =>
 	Object.keys(types)
-		.map(type => {
+		.map((type) => {
 			const { fields, comment } = types[type];
 			return `
 				${comment || "/**/\n"}interface Pg${type} extends PgNode {
@@ -66,7 +66,7 @@ const writeTypeScriptFile = async (pathRelativeToRoot, content) => {
 	const options = await prettier.resolveConfig(absolutePath);
 	const formattedContent = prettier.format(content, {
 		...options,
-		filepath: absolutePath
+		filepath: absolutePath,
 	});
 
 	await writeFile(absolutePath, formattedContent, "utf8");
@@ -74,12 +74,12 @@ const writeTypeScriptFile = async (pathRelativeToRoot, content) => {
 
 const generateTypeDeclaration = () => {
 	const enums = enumDefsKeys
-		.map(key => enumDefs[key])
-		.map(types => generateEnums(types))
+		.map((key) => enumDefs[key])
+		.map((types) => generateEnums(types))
 		.join("\n");
 	const interfaces = structDefsKeys
-		.map(key => structDefs[key])
-		.map(types => generateInterfaces(types))
+		.map((key) => structDefs[key])
+		.map((types) => generateInterfaces(types))
 		.join("\n");
 	return `
 		declare module "pg-query-emscripten" {
@@ -108,12 +108,12 @@ const generateTypeDeclaration = () => {
 
 const generateTypeGuards = () => {
 	const types = structDefsKeys
-		.map(key => structDefs[key])
-		.flatMap(types => Object.keys(types));
-	const imports = types.map(type => `Pg${type}`).join(", ");
+		.map((key) => structDefs[key])
+		.flatMap((types) => Object.keys(types));
+	const imports = types.map((type) => `Pg${type}`).join(", ");
 	const typeGuards = types
 		.map(
-			type =>
+			(type) =>
 				`export const isPg${type} = (obj: PgNode): obj is Pg${type} => !!(<any>obj).${type};`
 		)
 		.join("\n");

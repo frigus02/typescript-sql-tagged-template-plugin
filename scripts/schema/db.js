@@ -1,6 +1,6 @@
 const { Client } = require("pg");
 
-exports.exportSchema = async schemaNames => {
+exports.exportSchema = async (schemaNames) => {
 	const client = new Client();
 	await client.connect();
 	const tables = await getTables(client);
@@ -9,13 +9,13 @@ exports.exportSchema = async schemaNames => {
 
 	const result = {};
 	const schemas = Object.keys(tables).filter(
-		schema =>
+		(schema) =>
 			!schemaNames || schemaNames.length === 0 || schemaNames.includes(schema)
 	);
 	for (const schema of schemas) {
 		result[schema] = {
 			tables: tables[schema],
-			enums: enums[schema] || {}
+			enums: enums[schema] || {},
 		};
 	}
 
@@ -24,10 +24,10 @@ exports.exportSchema = async schemaNames => {
 
 const sql = (strings, ...values) => ({
 	text: String.raw(strings, ...values.map((_, i) => `$${i + 1}`)),
-	values
+	values,
 });
 
-const getEnums = async db => {
+const getEnums = async (db) => {
 	const res = await db.query(sql`
 		SELECT
 			n.nspname AS schema,
@@ -59,7 +59,7 @@ const getEnums = async db => {
 	return enums;
 };
 
-const getTables = async db => {
+const getTables = async (db) => {
 	const res = await db.query(sql`
 		SELECT
 			c.table_schema AS schema,
@@ -106,7 +106,7 @@ const getTables = async db => {
 			type,
 			is_array,
 			is_nullable,
-			is_user_defined
+			is_user_defined,
 		} = row;
 
 		if (!tables[schema]) {
@@ -121,7 +121,7 @@ const getTables = async db => {
 			type,
 			array: is_array,
 			nullable: is_nullable,
-			userDefined: is_user_defined
+			userDefined: is_user_defined,
 		};
 	}
 

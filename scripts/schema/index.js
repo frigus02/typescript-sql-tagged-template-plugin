@@ -2,7 +2,7 @@ const { relative: relativePath } = require("path");
 const { exportSchema } = require("./db");
 const { mapSchemaToTypeScriptTypes } = require("./ts");
 
-const generateSchema = async schemaNames => {
+const generateSchema = async (schemaNames) => {
 	const schema = await exportSchema(schemaNames);
 	const mappedSchema = mapSchemaToTypeScriptTypes(schema);
 	const json = JSON.stringify(mappedSchema, null, 4);
@@ -33,7 +33,7 @@ const main = async () => {
 	}
 };
 
-main().catch(err => {
+main().catch((err) => {
 	console.error("Error generating schema:", err, "\n");
 	printUsage();
 	process.exitCode = 1;

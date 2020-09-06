@@ -218,7 +218,7 @@ import {
 	PgAlterPublicationStmt,
 	PgCreateSubscriptionStmt,
 	PgAlterSubscriptionStmt,
-	PgDropSubscriptionStmt
+	PgDropSubscriptionStmt,
 } from "pg-query-emscripten";
 export const isPgNodeArray = (obj: PgNode): obj is PgNode[] =>
 	Array.isArray(obj);

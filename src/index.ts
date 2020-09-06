@@ -1,6 +1,6 @@
 import {
 	decorateWithTemplateLanguageService,
-	TemplateSettings
+	TemplateSettings,
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { ParsedPluginConfiguration } from "./configuration";
@@ -49,7 +49,7 @@ class SqlTaggedTemplatePlugin {
 		const templateSettings: TemplateSettings = {
 			tags: ["sql"],
 			enableForStringWithSubstitutions: true,
-			getSubstitutions
+			getSubstitutions,
 		};
 
 		const languageService = decorateWithTemplateLanguageService(

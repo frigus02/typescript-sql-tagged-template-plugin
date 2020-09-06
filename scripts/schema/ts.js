@@ -1,4 +1,4 @@
-exports.mapSchemaToTypeScriptTypes = dbSchema => {
+exports.mapSchemaToTypeScriptTypes = (dbSchema) => {
 	const result = {};
 
 	for (const schemaName of Object.keys(dbSchema)) {
@@ -41,7 +41,7 @@ const getBaseType = (column, enums) => {
 	if (column.userDefined) {
 		const values = enums[column.type];
 		if (values) {
-			return values.map(v => JSON.stringify(v)).join(" | ");
+			return values.map((v) => JSON.stringify(v)).join(" | ");
 		}
 
 		console.warn(

@@ -10,7 +10,7 @@ export const sql = (name: string) => (
 ): Query => ({
 	name,
 	text: String.raw(strings, ...values.map((_, i) => `$${i + 1}`)),
-	values
+	values,
 });
 
 export const createOrder = (userId: string, notes: string | null) => sql(

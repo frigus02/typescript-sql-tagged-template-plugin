@@ -11,7 +11,7 @@ declare module "pg-query-emscripten" {
 		LCS_FORKEYSHARE = 1,
 		LCS_FORSHARE = 2,
 		LCS_FORNOKEYUPDATE = 3,
-		LCS_FORUPDATE = 4
+		LCS_FORUPDATE = 4,
 	}
 
 	/*
@@ -23,7 +23,7 @@ declare module "pg-query-emscripten" {
 	const enum PgLockWaitPolicy {
 		LockWaitBlock = 0,
 		LockWaitSkip = 1,
-		LockWaitError = 2
+		LockWaitError = 2,
 	}
 
 	/*
@@ -437,7 +437,7 @@ declare module "pg-query-emscripten" {
 		T_FdwRoutine = 398,
 		T_IndexAmRoutine = 399,
 		T_TsmRoutine = 400,
-		T_ForeignKeyCacheInfo = 401
+		T_ForeignKeyCacheInfo = 401,
 	}
 
 	/*
@@ -453,7 +453,7 @@ declare module "pg-query-emscripten" {
 		CMD_INSERT = 3,
 		CMD_DELETE = 4,
 		CMD_UTILITY = 5,
-		CMD_NOTHING = 6
+		CMD_NOTHING = 6,
 	}
 
 	/*
@@ -474,7 +474,7 @@ declare module "pg-query-emscripten" {
 		JOIN_SEMI = 4,
 		JOIN_ANTI = 5,
 		JOIN_UNIQUE_OUTER = 6,
-		JOIN_UNIQUE_INNER = 7
+		JOIN_UNIQUE_INNER = 7,
 	}
 
 	/*
@@ -487,14 +487,14 @@ declare module "pg-query-emscripten" {
 		AGG_PLAIN = 0,
 		AGG_SORTED = 1,
 		AGG_HASHED = 2,
-		AGG_MIXED = 3
+		AGG_MIXED = 3,
 	}
 
 	/* Supported operating modes (i.e., useful combinations of these options): */
 	const enum PgAggSplit {
 		AGGSPLIT_SIMPLE = 0,
 		AGGSPLIT_INITIAL_SERIAL = 1,
-		AGGSPLIT_FINAL_DESERIAL = 2
+		AGGSPLIT_FINAL_DESERIAL = 2,
 	}
 
 	/*
@@ -507,13 +507,13 @@ declare module "pg-query-emscripten" {
 		SETOPCMD_INTERSECT = 0,
 		SETOPCMD_INTERSECT_ALL = 1,
 		SETOPCMD_EXCEPT = 2,
-		SETOPCMD_EXCEPT_ALL = 3
+		SETOPCMD_EXCEPT_ALL = 3,
 	}
 
 	/**/
 	const enum PgSetOpStrategy {
 		SETOP_SORTED = 0,
-		SETOP_HASHED = 1
+		SETOP_HASHED = 1,
 	}
 
 	/*
@@ -525,7 +525,7 @@ declare module "pg-query-emscripten" {
 	const enum PgOnConflictAction {
 		ONCONFLICT_NONE = 0,
 		ONCONFLICT_NOTHING = 1,
-		ONCONFLICT_UPDATE = 2
+		ONCONFLICT_UPDATE = 2,
 	}
 
 	/* What to do at commit time for temporary relations */
@@ -533,7 +533,7 @@ declare module "pg-query-emscripten" {
 		ONCOMMIT_NOOP = 0,
 		ONCOMMIT_PRESERVE_ROWS = 1,
 		ONCOMMIT_DELETE_ROWS = 2,
-		ONCOMMIT_DROP = 3
+		ONCOMMIT_DROP = 3,
 	}
 
 	/*
@@ -567,7 +567,7 @@ declare module "pg-query-emscripten" {
 		PARAM_EXTERN = 0,
 		PARAM_EXEC = 1,
 		PARAM_SUBLINK = 2,
-		PARAM_MULTIEXPR = 3
+		PARAM_MULTIEXPR = 3,
 	}
 
 	/*
@@ -579,7 +579,7 @@ declare module "pg-query-emscripten" {
 	const enum PgCoercionContext {
 		COERCION_IMPLICIT = 0,
 		COERCION_ASSIGNMENT = 1,
-		COERCION_EXPLICIT = 2
+		COERCION_EXPLICIT = 2,
 	}
 
 	/*
@@ -594,7 +594,7 @@ declare module "pg-query-emscripten" {
 	const enum PgCoercionForm {
 		COERCE_EXPLICIT_CALL = 0,
 		COERCE_EXPLICIT_CAST = 1,
-		COERCE_IMPLICIT_CAST = 2
+		COERCE_IMPLICIT_CAST = 2,
 	}
 
 	/*
@@ -606,7 +606,7 @@ declare module "pg-query-emscripten" {
 	 */
 	const enum PgBoolExprType {
 		AND_EXPR = 0,
-		OR_EXPR = 1
+		OR_EXPR = 1,
 	}
 
 	/*
@@ -668,7 +668,7 @@ declare module "pg-query-emscripten" {
 		EXPR_SUBLINK = 4,
 		MULTIEXPR_SUBLINK = 5,
 		ARRAY_SUBLINK = 6,
-		CTE_SUBLINK = 7
+		CTE_SUBLINK = 7,
 	}
 
 	/*
@@ -691,7 +691,7 @@ declare module "pg-query-emscripten" {
 		ROWCOMPARE_EQ = 2,
 		ROWCOMPARE_GE = 3,
 		ROWCOMPARE_GT = 4,
-		ROWCOMPARE_NE = 5
+		ROWCOMPARE_NE = 5,
 	}
 
 	/*
@@ -699,7 +699,7 @@ declare module "pg-query-emscripten" {
 	 */
 	const enum PgMinMaxOp {
 		IS_GREATEST = 0,
-		IS_LEAST = 1
+		IS_LEAST = 1,
 	}
 
 	/*
@@ -728,7 +728,7 @@ declare module "pg-query-emscripten" {
 		SVFOP_USER = 11,
 		SVFOP_SESSION_USER = 12,
 		SVFOP_CURRENT_CATALOG = 13,
-		SVFOP_CURRENT_SCHEMA = 14
+		SVFOP_CURRENT_SCHEMA = 14,
 	}
 
 	/*
@@ -750,13 +750,13 @@ declare module "pg-query-emscripten" {
 		IS_XMLPI = 4,
 		IS_XMLROOT = 5,
 		IS_XMLSERIALIZE = 6,
-		IS_DOCUMENT = 7
+		IS_DOCUMENT = 7,
 	}
 
 	/**/
 	const enum PgXmlOptionType {
 		XMLOPTION_DOCUMENT = 0,
-		XMLOPTION_CONTENT = 1
+		XMLOPTION_CONTENT = 1,
 	}
 
 	/* ----------------
@@ -779,7 +779,7 @@ declare module "pg-query-emscripten" {
 	 */
 	const enum PgNullTestType {
 		IS_NULL = 0,
-		IS_NOT_NULL = 1
+		IS_NOT_NULL = 1,
 	}
 
 	/*
@@ -792,7 +792,7 @@ declare module "pg-query-emscripten" {
 	 */
 	const enum PgBoolTestType {
 		IS_TRUE = 0,
-		IS_NOT_TRUE = 1
+		IS_NOT_TRUE = 1,
 	}
 
 	/*-------------------------------------------------------------------------
@@ -819,7 +819,7 @@ declare module "pg-query-emscripten" {
 	const enum PgOverridingKind {
 		OVERRIDING_NOT_SET = 0,
 		OVERRIDING_USER_VALUE = 1,
-		OVERRIDING_SYSTEM_VALUE = 2
+		OVERRIDING_SYSTEM_VALUE = 2,
 	}
 
 	/* Possible sources of a Query */
@@ -828,7 +828,7 @@ declare module "pg-query-emscripten" {
 		QSRC_PARSER = 1,
 		QSRC_INSTEAD_RULE = 2,
 		QSRC_QUAL_INSTEAD_RULE = 3,
-		QSRC_NON_INSTEAD_RULE = 4
+		QSRC_NON_INSTEAD_RULE = 4,
 	}
 
 	/* Sort ordering options for ORDER BY and CREATE INDEX */
@@ -836,14 +836,14 @@ declare module "pg-query-emscripten" {
 		SORTBY_DEFAULT = 0,
 		SORTBY_ASC = 1,
 		SORTBY_DESC = 2,
-		SORTBY_USING = 3
+		SORTBY_USING = 3,
 	}
 
 	/**/
 	const enum PgSortByNulls {
 		SORTBY_NULLS_DEFAULT = 0,
 		SORTBY_NULLS_FIRST = 1,
-		SORTBY_NULLS_LAST = 2
+		SORTBY_NULLS_LAST = 2,
 	}
 
 	/*
@@ -865,7 +865,7 @@ declare module "pg-query-emscripten" {
 		AEXPR_NOT_BETWEEN = 12,
 		AEXPR_BETWEEN_SYM = 13,
 		AEXPR_NOT_BETWEEN_SYM = 14,
-		AEXPR_PAREN = 15
+		AEXPR_PAREN = 15,
 	}
 
 	/*
@@ -875,7 +875,7 @@ declare module "pg-query-emscripten" {
 		ROLESPEC_CSTRING = 0,
 		ROLESPEC_CURRENT_USER = 1,
 		ROLESPEC_SESSION_USER = 2,
-		ROLESPEC_PUBLIC = 3
+		ROLESPEC_PUBLIC = 3,
 	}
 
 	/**/
@@ -886,7 +886,7 @@ declare module "pg-query-emscripten" {
 		CREATE_TABLE_LIKE_INDEXES = 3,
 		CREATE_TABLE_LIKE_STORAGE = 4,
 		CREATE_TABLE_LIKE_COMMENTS = 5,
-		CREATE_TABLE_LIKE_ALL = 6
+		CREATE_TABLE_LIKE_ALL = 6,
 	}
 
 	/*
@@ -903,7 +903,7 @@ declare module "pg-query-emscripten" {
 		DEFELEM_UNSPEC = 0,
 		DEFELEM_SET = 1,
 		DEFELEM_ADD = 2,
-		DEFELEM_DROP = 3
+		DEFELEM_DROP = 3,
 	}
 
 	/*
@@ -914,7 +914,7 @@ declare module "pg-query-emscripten" {
 	const enum PgPartitionRangeDatumKind {
 		PARTITION_RANGE_DATUM_MINVALUE = 0,
 		PARTITION_RANGE_DATUM_VALUE = 1,
-		PARTITION_RANGE_DATUM_MAXVALUE = 2
+		PARTITION_RANGE_DATUM_MAXVALUE = 2,
 	}
 
 	/*--------------------
@@ -1005,7 +1005,7 @@ declare module "pg-query-emscripten" {
 		RTE_TABLEFUNC = 4,
 		RTE_VALUES = 5,
 		RTE_CTE = 6,
-		RTE_NAMEDTUPLESTORE = 7
+		RTE_NAMEDTUPLESTORE = 7,
 	}
 
 	/*
@@ -1018,7 +1018,7 @@ declare module "pg-query-emscripten" {
 		WCO_VIEW_CHECK = 0,
 		WCO_RLS_INSERT_CHECK = 1,
 		WCO_RLS_UPDATE_CHECK = 2,
-		WCO_RLS_CONFLICT_CHECK = 3
+		WCO_RLS_CONFLICT_CHECK = 3,
 	}
 
 	/*
@@ -1076,7 +1076,7 @@ declare module "pg-query-emscripten" {
 		GROUPING_SET_SIMPLE = 1,
 		GROUPING_SET_ROLLUP = 2,
 		GROUPING_SET_CUBE = 3,
-		GROUPING_SET_SETS = 4
+		GROUPING_SET_SETS = 4,
 	}
 
 	/* ----------------------
@@ -1096,7 +1096,7 @@ declare module "pg-query-emscripten" {
 		SETOP_NONE = 0,
 		SETOP_UNION = 1,
 		SETOP_INTERSECT = 2,
-		SETOP_EXCEPT = 3
+		SETOP_EXCEPT = 3,
 	}
 
 	/*
@@ -1152,13 +1152,13 @@ declare module "pg-query-emscripten" {
 		OBJECT_TSTEMPLATE = 44,
 		OBJECT_TYPE = 45,
 		OBJECT_USER_MAPPING = 46,
-		OBJECT_VIEW = 47
+		OBJECT_VIEW = 47,
 	}
 
 	/**/
 	const enum PgDropBehavior {
 		DROP_RESTRICT = 0,
-		DROP_CASCADE = 1
+		DROP_CASCADE = 1,
 	}
 
 	/**/
@@ -1228,7 +1228,7 @@ declare module "pg-query-emscripten" {
 		AT_DetachPartition = 62,
 		AT_AddIdentity = 63,
 		AT_SetIdentity = 64,
-		AT_DropIdentity = 65
+		AT_DropIdentity = 65,
 	}
 
 	/* ----------------------
@@ -1238,7 +1238,7 @@ declare module "pg-query-emscripten" {
 	const enum PgGrantTargetType {
 		ACL_TARGET_OBJECT = 0,
 		ACL_TARGET_ALL_IN_SCHEMA = 1,
-		ACL_TARGET_DEFAULTS = 2
+		ACL_TARGET_DEFAULTS = 2,
 	}
 
 	/**/
@@ -1255,7 +1255,7 @@ declare module "pg-query-emscripten" {
 		ACL_OBJECT_LARGEOBJECT = 9,
 		ACL_OBJECT_NAMESPACE = 10,
 		ACL_OBJECT_TABLESPACE = 11,
-		ACL_OBJECT_TYPE = 12
+		ACL_OBJECT_TYPE = 12,
 	}
 
 	/* ----------------------
@@ -1271,7 +1271,7 @@ declare module "pg-query-emscripten" {
 		VAR_SET_CURRENT = 2,
 		VAR_SET_MULTI = 3,
 		VAR_RESET = 4,
-		VAR_RESET_ALL = 5
+		VAR_RESET_ALL = 5,
 	}
 
 	/* ----------
@@ -1317,7 +1317,7 @@ declare module "pg-query-emscripten" {
 		CONSTR_ATTR_DEFERRABLE = 9,
 		CONSTR_ATTR_NOT_DEFERRABLE = 10,
 		CONSTR_ATTR_DEFERRED = 11,
-		CONSTR_ATTR_IMMEDIATE = 12
+		CONSTR_ATTR_IMMEDIATE = 12,
 	}
 
 	/* ----------------------
@@ -1327,7 +1327,7 @@ declare module "pg-query-emscripten" {
 	const enum PgImportForeignSchemaType {
 		FDW_IMPORT_SCHEMA_ALL = 0,
 		FDW_IMPORT_SCHEMA_LIMIT_TO = 1,
-		FDW_IMPORT_SCHEMA_EXCEPT = 2
+		FDW_IMPORT_SCHEMA_EXCEPT = 2,
 	}
 
 	/* ----------------------
@@ -1342,7 +1342,7 @@ declare module "pg-query-emscripten" {
 	const enum PgRoleStmtType {
 		ROLESTMT_ROLE = 0,
 		ROLESTMT_USER = 1,
-		ROLESTMT_GROUP = 2
+		ROLESTMT_GROUP = 2,
 	}
 
 	/* ----------------------
@@ -1353,7 +1353,7 @@ declare module "pg-query-emscripten" {
 		FETCH_FORWARD = 0,
 		FETCH_BACKWARD = 1,
 		FETCH_ABSOLUTE = 2,
-		FETCH_RELATIVE = 3
+		FETCH_RELATIVE = 3,
 	}
 
 	/**/
@@ -1362,7 +1362,7 @@ declare module "pg-query-emscripten" {
 		FUNC_PARAM_OUT = 1,
 		FUNC_PARAM_INOUT = 2,
 		FUNC_PARAM_VARIADIC = 3,
-		FUNC_PARAM_TABLE = 4
+		FUNC_PARAM_TABLE = 4,
 	}
 
 	/* ----------------------
@@ -1379,7 +1379,7 @@ declare module "pg-query-emscripten" {
 		TRANS_STMT_ROLLBACK_TO = 6,
 		TRANS_STMT_PREPARE = 7,
 		TRANS_STMT_COMMIT_PREPARED = 8,
-		TRANS_STMT_ROLLBACK_PREPARED = 9
+		TRANS_STMT_ROLLBACK_PREPARED = 9,
 	}
 
 	/* ----------------------
@@ -1389,7 +1389,7 @@ declare module "pg-query-emscripten" {
 	const enum PgViewCheckOption {
 		NO_CHECK_OPTION = 0,
 		LOCAL_CHECK_OPTION = 1,
-		CASCADED_CHECK_OPTION = 2
+		CASCADED_CHECK_OPTION = 2,
 	}
 
 	/* ----------------------
@@ -1408,7 +1408,7 @@ declare module "pg-query-emscripten" {
 		VACOPT_FULL = 4,
 		VACOPT_NOWAIT = 5,
 		VACOPT_SKIPTOAST = 6,
-		VACOPT_DISABLE_PAGE_SKIPPING = 7
+		VACOPT_DISABLE_PAGE_SKIPPING = 7,
 	}
 
 	/* ----------------------
@@ -1419,7 +1419,7 @@ declare module "pg-query-emscripten" {
 		DISCARD_ALL = 0,
 		DISCARD_PLANS = 1,
 		DISCARD_SEQUENCES = 2,
-		DISCARD_TEMP = 3
+		DISCARD_TEMP = 3,
 	}
 
 	/* Reindex options */
@@ -1428,7 +1428,7 @@ declare module "pg-query-emscripten" {
 		REINDEX_OBJECT_TABLE = 1,
 		REINDEX_OBJECT_SCHEMA = 2,
 		REINDEX_OBJECT_SYSTEM = 3,
-		REINDEX_OBJECT_DATABASE = 4
+		REINDEX_OBJECT_DATABASE = 4,
 	}
 
 	/*
@@ -1439,7 +1439,7 @@ declare module "pg-query-emscripten" {
 		ALTER_TSCONFIG_ALTER_MAPPING_FOR_TOKEN = 1,
 		ALTER_TSCONFIG_REPLACE_DICT = 2,
 		ALTER_TSCONFIG_REPLACE_DICT_FOR_TOKEN = 3,
-		ALTER_TSCONFIG_DROP_MAPPING = 4
+		ALTER_TSCONFIG_DROP_MAPPING = 4,
 	}
 
 	/**/
@@ -1448,7 +1448,7 @@ declare module "pg-query-emscripten" {
 		ALTER_SUBSCRIPTION_CONNECTION = 1,
 		ALTER_SUBSCRIPTION_PUBLICATION = 2,
 		ALTER_SUBSCRIPTION_REFRESH = 3,
-		ALTER_SUBSCRIPTION_ENABLED = 4
+		ALTER_SUBSCRIPTION_ENABLED = 4,
 	}
 
 	/**/

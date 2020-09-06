@@ -1,7 +1,7 @@
 import {
 	Logger,
 	TemplateContext,
-	TemplateLanguageService
+	TemplateLanguageService,
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { Analysis, analyze, ParseError } from "./analysis";
@@ -24,22 +24,22 @@ interface DiagnosticMessage {
 const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 	100_000: {
 		messageText: (e: Error) => `Failed to parse: ${e.message}.`,
-		category: "Error"
+		category: "Error",
 	},
 	100_001: {
 		messageText: (e: ParseError) => `Failed to parse: ${e.message}.`,
-		category: "Error"
+		category: "Error",
 	},
 	100_002: {
 		messageText: (p: Parameter) =>
 			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
-		category: "Error"
+		category: "Error",
 	},
 	100_003: {
 		messageText: (originalMessage: string) =>
 			`There was an issue type checking this expression. Original error: ${originalMessage}`,
-		category: "Warning"
-	}
+		category: "Warning",
+	},
 };
 
 const unsupportedTypeScriptErrors = new Set([
@@ -48,7 +48,7 @@ const unsupportedTypeScriptErrors = new Set([
 	// This type is then checked against the type from the DB schema. If we get
 	// this error, it most likely means not all type names were resolved
 	// correctly.
-	2304
+	2304,
 ]);
 
 const getTemplateExpressions = (
@@ -56,7 +56,7 @@ const getTemplateExpressions = (
 	node: ts.TemplateLiteral
 ) =>
 	typescript.isTemplateExpression(node)
-		? node.templateSpans.map(span => span.expression)
+		? node.templateSpans.map((span) => span.expression)
 		: [];
 
 const stringifyParameter = (parameter: Parameter): string =>
@@ -64,9 +64,9 @@ const stringifyParameter = (parameter: Parameter): string =>
 		parameter.schema,
 		parameter.table,
 		parameter.column,
-		parameter.jsonPath && parameter.jsonPath.path
+		parameter.jsonPath && parameter.jsonPath.path,
 	]
-		.filter(x => x)
+		.filter((x) => x)
 		.join(".");
 
 const getParameterType = (
@@ -96,7 +96,7 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 		messageText,
 		category,
 		start,
-		length
+		length,
 	}: Pick<
 		ts.Diagnostic,
 		"code" | "messageText" | "category" | "start" | "length"
@@ -107,7 +107,7 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 		start,
 		length,
 		file,
-		source
+		source,
 	});
 
 	const own = (
@@ -122,18 +122,18 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 				context.typescript.DiagnosticCategory[
 					diagnosticMessages[code].category
 				],
-			...pos
+			...pos,
 		});
 
 	const pos = (expression: ts.Expression) => ({
 		start: expression.getStart(file) - context.node.getStart(file) - 1,
-		length: expression.getWidth(file)
+		length: expression.getWidth(file),
 	});
 
 	return {
 		any,
 		own,
-		pos
+		pos,
 	};
 };
 
@@ -176,7 +176,7 @@ export default class SqlTemplateLanguageService
 		const diagnostics = Array.from(analysis.parameters.entries())
 			.map(([index, parameter]) => ({
 				expression: expressions[index - 1],
-				parameter
+				parameter,
 			}))
 			.map(({ expression, parameter }) => {
 				const parameterType = getParameterType(
@@ -190,7 +190,7 @@ export default class SqlTemplateLanguageService
 
 				const expressionType = this.typeResolver.getType(expression);
 				const content = `{ let expr: ${expressionType} = null as any; let param: ${parameterType} = expr; }`;
-				return this.typeChecker.check(content).map(diagnostic =>
+				return this.typeChecker.check(content).map((diagnostic) =>
 					unsupportedTypeScriptErrors.has(diagnostic.code)
 						? factory.own(
 								100_003,
@@ -201,7 +201,7 @@ export default class SqlTemplateLanguageService
 								code: diagnostic.code,
 								messageText: diagnostic.messageText,
 								category: diagnostic.category,
-								...factory.pos(expression)
+								...factory.pos(expression),
 						  })
 				);
 			});

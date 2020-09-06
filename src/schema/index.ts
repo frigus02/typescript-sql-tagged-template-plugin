@@ -18,21 +18,21 @@ const isColumnDefinition = (obj: unknown): obj is ColumnDefinition =>
 const isTableDefinition = (obj: unknown): obj is TableDefinition =>
 	typeof obj === "object" &&
 	obj !== null &&
-	(Object.keys(obj) as Array<keyof typeof obj>).every(key =>
+	(Object.keys(obj) as Array<keyof typeof obj>).every((key) =>
 		isColumnDefinition(obj[key])
 	);
 
 const isSchemaDefinition = (obj: unknown): obj is SchemaDefinition =>
 	typeof obj === "object" &&
 	obj !== null &&
-	(Object.keys(obj) as Array<keyof typeof obj>).every(key =>
+	(Object.keys(obj) as Array<keyof typeof obj>).every((key) =>
 		isTableDefinition(obj[key])
 	);
 
 const isDatabaseSchema = (obj: unknown): obj is DatabaseSchema =>
 	typeof obj === "object" &&
 	obj !== null &&
-	(Object.keys(obj) as Array<keyof typeof obj>).every(key =>
+	(Object.keys(obj) as Array<keyof typeof obj>).every((key) =>
 		isSchemaDefinition(obj[key])
 	);
 

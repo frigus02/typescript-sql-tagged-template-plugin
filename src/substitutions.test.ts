@@ -7,7 +7,7 @@ describe(getSubstitutions, () => {
 	it("replaces expressions with SQL parameters", () => {
 		const result = getSubstitutions(templateString, [
 			{ start: 31, end: 40 },
-			{ start: 51, end: 57 }
+			{ start: 51, end: 57 },
 		]);
 
 		expect(result).toBe(
@@ -18,7 +18,7 @@ describe(getSubstitutions, () => {
 	it("keeps resulting string the same length as the original template string", () => {
 		const result = getSubstitutions(templateString, [
 			{ start: 31, end: 40 },
-			{ start: 51, end: 57 }
+			{ start: 51, end: 57 },
 		]);
 
 		expect(result.length).toBe(templateString.length);
