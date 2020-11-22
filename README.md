@@ -51,6 +51,40 @@ If you are using the [SQL tagged template literals](https://marketplace.visualst
 
 Otherwise you can configure the behavior of this plugin in the `plugins` section of in your `tsconfig`.
 
+### Enable diagnostics
+
+Diagnostics include parsing of the SQL statements and type checking if a schema file is configured. It's enabled by default. You can disable it using the `enableDiagnostics` setting:
+
+```json
+{
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "typescript-sql-tagged-template-plugin",
+				"enableDiagnostics": false
+			}
+		]
+	}
+}
+```
+
+### Enable format
+
+If you have Perl installed locally, you can enable formatting support. It's using [pgFormatter](https://github.com/darold/pgFormatter) under the hood. Enable using the `enableFormat` setting:
+
+```json
+{
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "typescript-sql-tagged-template-plugin",
+				"enableFormat": true
+			}
+		]
+	}
+}
+```
+
 ### Database schema
 
 In order to do type checking for parameters in SQL statements, the plugin needs to know about your database schema. You can generate a JSON file with your DB schema using the script [scripts/schema/index.js](./scripts/schema/index.js). If you have a different DB type conversion, modify the file afterwards.

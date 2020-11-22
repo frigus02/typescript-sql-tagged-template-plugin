@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "typescript": "^3.5.3",
+    "typescript": "^4.1.2",
     "typescript-sql-tagged-template-plugin": "file:./.."
   }
 }

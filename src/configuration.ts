@@ -4,15 +4,21 @@ import { DatabaseSchema, parseSchema } from "./schema";
 import { Logger } from "typescript-template-language-service-decorator";
 
 export interface PluginConfiguration {
+	readonly enableDiagnostics?: boolean;
+	readonly enableFormat?: boolean;
 	readonly schemaFile?: string;
 	readonly defaultSchemaName?: string;
 }
 
 const defaults = {
+	enableDiagnostics: true,
+	enableFormat: false,
 	defaultSchemaName: "public",
 };
 
 export class ParsedPluginConfiguration {
+	enableDiagnostics: boolean = defaults.enableDiagnostics;
+	enableFormat: boolean = defaults.enableFormat;
 	schema?: DatabaseSchema;
 	defaultSchemaName: string = defaults.defaultSchemaName;
 
@@ -23,6 +29,10 @@ export class ParsedPluginConfiguration {
 
 	update(config: PluginConfiguration) {
 		this.logger.log("new config: " + JSON.stringify(config));
+
+		this.enableDiagnostics =
+			config.enableDiagnostics ?? defaults.enableDiagnostics;
+		this.enableFormat = config.enableFormat ?? defaults.enableFormat;
 
 		this.schema = undefined;
 		if (config.schemaFile) {

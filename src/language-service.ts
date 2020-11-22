@@ -4,6 +4,7 @@ import {
 	TemplateLanguageService,
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
+import { format } from "pg-formatter";
 import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { pluginName } from "./config";
@@ -32,7 +33,9 @@ const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 	},
 	100_002: {
 		messageText: (p: Parameter) =>
-			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
+			`Cannot find type for parameter ${stringifyParameter(
+				p
+			)} in schema.`,
 		category: "Error",
 	},
 	100_003: {
@@ -147,6 +150,10 @@ export default class SqlTemplateLanguageService
 	) {}
 
 	getSemanticDiagnostics(context: TemplateContext): ts.Diagnostic[] {
+		if (!this.config.enableDiagnostics) {
+			return [];
+		}
+
 		const factory = getDiagnosticFactory(context);
 
 		let analysis: Analysis;
@@ -154,8 +161,18 @@ export default class SqlTemplateLanguageService
 			analysis = analyze(context.text);
 		} catch (e) {
 			return e instanceof ParseError
-				? [factory.own(100_001, e, { start: e.cursorPosition - 1, length: 1 })]
-				: [factory.own(100_000, e, { start: 0, length: context.text.length })];
+				? [
+						factory.own(100_001, e, {
+							start: e.cursorPosition - 1,
+							length: 1,
+						}),
+				  ]
+				: [
+						factory.own(100_000, e, {
+							start: 0,
+							length: context.text.length,
+						}),
+				  ];
 		}
 
 		for (const warning of analysis.warnings) {
@@ -166,6 +183,7 @@ export default class SqlTemplateLanguageService
 
 		const schema = this.config.schema;
 		if (!schema) {
+			this.logger.log("skip type checks because no schema configured");
 			return [];
 		}
 
@@ -185,7 +203,13 @@ export default class SqlTemplateLanguageService
 					this.config.defaultSchemaName
 				);
 				if (!parameterType) {
-					return [factory.own(100_002, parameter, factory.pos(expression))];
+					return [
+						factory.own(
+							100_002,
+							parameter,
+							factory.pos(expression)
+						),
+					];
 				}
 
 				const expressionType = this.typeResolver.getType(expression);
@@ -207,5 +231,38 @@ export default class SqlTemplateLanguageService
 			});
 
 		return flatten(diagnostics);
+	}
+
+	getFormattingEditsForRange(
+		context: TemplateContext,
+		start: number,
+		end: number,
+		settings: ts.EditorSettings
+	): ts.TextChange[] {
+		this.logger.log(
+			"format requested. config: " + this.config.enableFormat
+		);
+		if (!this.config.enableFormat) {
+			return [];
+		}
+
+		const text = context.text.substring(start, end);
+		try {
+			const newText = format(text, {
+				spaces: settings.tabSize,
+			});
+			if (newText !== context.text) {
+				return [
+					{
+						span: { start, length: end - start },
+						newText,
+					},
+				];
+			}
+		} catch (e) {
+			this.logger.log(`error running pgFormatter: ${e.message}`);
+		}
+
+		return [];
 	}
 }
