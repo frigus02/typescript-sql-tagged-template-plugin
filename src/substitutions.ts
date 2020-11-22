@@ -1,8 +1,9 @@
 import { TemplateSettings } from "typescript-template-language-service-decorator";
 
-export const getSubstitutions: Required<
-	TemplateSettings
->["getSubstitutions"] = (templateString, spans) =>
+export const getSubstitutions: Required<TemplateSettings>["getSubstitutions"] = (
+	templateString,
+	spans
+) =>
 	spans.reduce((str, span, i) => {
 		const prefix = str.substring(0, span.start);
 		const suffix = str.substring(span.end);

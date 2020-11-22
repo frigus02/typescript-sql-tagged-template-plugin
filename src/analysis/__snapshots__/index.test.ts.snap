@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`any.sql 1`] = `
+exports[`analyze any.sql 1`] = `
 Object {
   "parameters": Map {
     1 => Object {
@@ -14,7 +14,7 @@ Object {
 }
 `;
 
-exports[`select.sql 1`] = `
+exports[`analyze select.sql 1`] = `
 Object {
   "parameters": Map {},
   "warnings": Array [],
