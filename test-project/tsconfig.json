@@ -6,8 +6,7 @@
 		"plugins": [
 			{
 				"name": "C:\\code\\typescript-sql-tagged-template-plugin\\build",
-				"schemaFile": "./db-schema.json",
-				"enableFormat": true
+				"schemaFile": "./db-schema.json"
 			}
 		]
 	}

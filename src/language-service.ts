@@ -4,11 +4,11 @@ import {
 	TemplateLanguageService,
 } from "typescript-template-language-service-decorator";
 import * as ts from "typescript/lib/tsserverlibrary";
-import { format } from "pg-formatter";
 import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { pluginName } from "./config";
 import { ParsedPluginConfiguration } from "./configuration";
+import { formatText } from "./formatting";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { TypeChecker } from "./type-checker";
 import { TypeResolver } from "./type-resolver";
@@ -248,9 +248,7 @@ export default class SqlTemplateLanguageService
 
 		const text = context.text.substring(start, end);
 		try {
-			const newText = format(text, {
-				spaces: settings.tabSize,
-			});
+			const newText = formatText(text, settings.tabSize);
 			if (newText !== context.text) {
 				return [
 					{

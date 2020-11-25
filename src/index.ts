@@ -13,7 +13,7 @@ import VirtualServiceHost from "./virtual-service-host";
 
 const pluginMarker = Symbol("__sqlTaggedTemplatePluginMarker__");
 
-class SqlTaggedTemplatePlugin {
+class SqlTaggedTemplatePlugin implements ts.server.PluginModule {
 	private config?: ParsedPluginConfiguration;
 
 	constructor(private readonly typescript: typeof ts) {}
@@ -34,7 +34,10 @@ class SqlTaggedTemplatePlugin {
 			{ strict: true },
 			info.project.getCurrentDirectory()
 		);
-		const typeChecker = new TypeChecker(this.typescript, virtualServiceHost);
+		const typeChecker = new TypeChecker(
+			this.typescript,
+			virtualServiceHost
+		);
 		const typeResolver = new TypeResolver(this.typescript, () =>
 			info.languageService.getProgram()!.getTypeChecker()
 		);
@@ -70,5 +73,7 @@ class SqlTaggedTemplatePlugin {
 	}
 }
 
-export = (mod: { typescript: typeof ts }) =>
+const factory: ts.server.PluginModuleFactory = (mod) =>
 	new SqlTaggedTemplatePlugin(mod.typescript);
+
+export = factory;
