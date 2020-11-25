@@ -192,6 +192,7 @@ export default class SqlTemplateLanguageService
 			context.node
 		);
 		const diagnostics = Array.from(analysis.parameters.entries())
+			.filter(([index]) => expressions.length >= index)
 			.map(([index, parameter]) => ({
 				expression: expressions[index - 1],
 				parameter,
