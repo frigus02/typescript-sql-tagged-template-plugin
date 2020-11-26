@@ -10,6 +10,22 @@ export const detectPerl = (): boolean => {
 	}
 };
 
-export const formatText = (sql: string, spaces?: number): string => {
-	return format(sql, { spaces });
+interface IndentStyleTabs {
+	style: "tabs";
+}
+
+interface IndentStyleSpaces {
+	style: "spaces";
+	number: number;
+}
+
+export const formatText = (
+	sql: string,
+	indent: IndentStyleTabs | IndentStyleSpaces
+): string => {
+	return format(sql, {
+		noRcFile: true,
+		spaces: indent.style === "spaces" ? indent.number : undefined,
+		tabs: indent.style === "tabs",
+	});
 };

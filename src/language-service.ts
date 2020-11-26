@@ -240,16 +240,21 @@ export default class SqlTemplateLanguageService
 		end: number,
 		settings: ts.EditorSettings
 	): ts.TextChange[] {
-		this.logger.log(
-			"format requested. config: " + this.config.enableFormat
-		);
 		if (!this.config.enableFormat) {
 			return [];
 		}
 
 		const text = context.text.substring(start, end);
 		try {
-			const newText = formatText(text, settings.tabSize);
+			const newText = formatText(
+				text,
+				settings.convertTabsToSpaces
+					? {
+							style: "spaces",
+							number: settings.indentSize ?? 4,
+					  }
+					: { style: "tabs" }
+			);
 			if (newText !== context.text) {
 				return [
 					{

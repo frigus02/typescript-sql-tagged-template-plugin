@@ -17,7 +17,7 @@
 		"build"
 	],
 	"dependencies": {
-		"pg-formatter": "^1.1.2",
+		"pg-formatter": "^1.2.0",
 		"pg-query-emscripten": "^0.1.0",
 		"typescript-template-language-service-decorator": "^2.2.0"
 	},
