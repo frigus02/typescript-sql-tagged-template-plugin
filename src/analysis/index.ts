@@ -17,7 +17,7 @@ import { notSupported, Warning } from "./utils";
 
 export interface Analysis {
 	warnings: Warning[];
-	parameters: Map<number, Parameter>;
+	parameters: Parameter[];
 }
 
 export class ParseError extends Error {
@@ -36,7 +36,7 @@ export const analyze = (query: string): Analysis => {
 		throw new ParseError(result.error);
 	} else if (result.parse_tree) {
 		const stmt = result.parse_tree[0];
-		let parameters;
+		let parameters: Parameter[];
 		if (isPgRawStmt(stmt) && stmt.RawStmt.stmt) {
 			const innerStmt = stmt.RawStmt.stmt;
 			if (isPgUpdateStmt(innerStmt)) {
@@ -49,11 +49,11 @@ export const analyze = (query: string): Analysis => {
 				parameters = getParamMapForDelete(innerStmt, warnings);
 			} else {
 				warnings.push(notSupported("statement", innerStmt));
-				parameters = new Map<number, Parameter>();
+				parameters = [];
 			}
 		} else {
 			warnings.push(notSupported("statement", stmt));
-			parameters = new Map<number, Parameter>();
+			parameters = [];
 		}
 
 		return {

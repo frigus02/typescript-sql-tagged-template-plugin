@@ -64,10 +64,10 @@ const getTemplateExpressions = (
 
 const stringifyParameter = (parameter: Parameter): string =>
 	[
-		parameter.schema,
-		parameter.table,
-		parameter.column,
-		parameter.jsonPath && parameter.jsonPath.path,
+		parameter.usedWith.schema,
+		parameter.usedWith.table,
+		parameter.usedWith.column,
+		parameter.usedWith.jsonPath && parameter.usedWith.jsonPath.path,
 	]
 		.filter((x) => x)
 		.join(".");
@@ -77,16 +77,16 @@ const getParameterType = (
 	schemaJson: DatabaseSchema,
 	defaultSchemaName: string
 ): ColumnDefinition | undefined => {
-	const schema = parameter.schema || defaultSchemaName;
+	const schema = parameter.usedWith.schema || defaultSchemaName;
 	const dbSchema = schemaJson[schema];
-	const dbTable = dbSchema && dbSchema[parameter.table];
-	const dbColumn = dbTable && dbTable[parameter.column];
+	const dbTable = dbSchema && dbSchema[parameter.usedWith.table];
+	const dbColumn = dbTable && dbTable[parameter.usedWith.column];
 	if (dbColumn) {
 		const type =
-			parameter.jsonPath && parameter.jsonPath.isText
+			parameter.usedWith.jsonPath && parameter.usedWith.jsonPath.isText
 				? "string | null"
 				: dbColumn;
-		return parameter.isArray ? `Array<${type}>` : type;
+		return parameter.usedWith.isArray ? `Array<${type}>` : type;
 	}
 };
 
@@ -191,10 +191,10 @@ export default class SqlTemplateLanguageService
 			context.typescript,
 			context.node
 		);
-		const diagnostics = Array.from(analysis.parameters.entries())
-			.filter(([index]) => expressions.length >= index)
-			.map(([index, parameter]) => ({
-				expression: expressions[index - 1],
+		const diagnostics = analysis.parameters
+			.filter((parameter) => expressions.length >= parameter.index)
+			.map((parameter) => ({
+				expression: expressions[parameter.index - 1],
 				parameter,
 			}))
 			.map(({ expression, parameter }) => {
@@ -255,7 +255,7 @@ export default class SqlTemplateLanguageService
 					  }
 					: { style: "tabs" }
 			);
-			if (newText !== context.text) {
+			if (newText !== text) {
 				return [
 					{
 						span: { start, length: end - start },
