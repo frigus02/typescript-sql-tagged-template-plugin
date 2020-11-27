@@ -8,7 +8,7 @@ import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { pluginName } from "./config";
 import { ParsedPluginConfiguration } from "./configuration";
-import { formatText } from "./formatting";
+import { formatSql, splitSqlByParameters } from "./formatting";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { TypeChecker } from "./type-checker";
 import { TypeResolver } from "./type-resolver";
@@ -62,12 +62,25 @@ const getTemplateExpressions = (
 		? node.templateSpans.map((span) => span.expression)
 		: [];
 
+const getTemplateLiterals = (typescript: typeof ts, node: ts.TemplateLiteral) =>
+	typescript.isTemplateExpression(node)
+		? [node.head, ...node.templateSpans.map((span) => span.literal)]
+		: [node];
+
+const getNodePosition = (node: ts.Node, context: TemplateContext) => {
+	const file = context.node.getSourceFile();
+	return {
+		start: node.getStart(file) - context.node.getStart(file) - 1,
+		length: node.getWidth(file),
+	};
+};
+
 const stringifyParameter = (parameter: Parameter): string =>
 	[
 		parameter.usedWith.schema,
 		parameter.usedWith.table,
 		parameter.usedWith.column,
-		parameter.usedWith.jsonPath && parameter.usedWith.jsonPath.path,
+		parameter.usedWith.jsonPath?.path,
 	]
 		.filter((x) => x)
 		.join(".");
@@ -77,13 +90,13 @@ const getParameterType = (
 	schemaJson: DatabaseSchema,
 	defaultSchemaName: string
 ): ColumnDefinition | undefined => {
-	const schema = parameter.usedWith.schema || defaultSchemaName;
+	const schema = parameter.usedWith.schema ?? defaultSchemaName;
 	const dbSchema = schemaJson[schema];
-	const dbTable = dbSchema && dbSchema[parameter.usedWith.table];
-	const dbColumn = dbTable && dbTable[parameter.usedWith.column];
+	const dbTable = dbSchema?.[parameter.usedWith.table];
+	const dbColumn = dbTable?.[parameter.usedWith.column];
 	if (dbColumn) {
 		const type =
-			parameter.usedWith.jsonPath && parameter.usedWith.jsonPath.isText
+			parameter.usedWith.jsonPath?.isText ?? false
 				? "string | null"
 				: dbColumn;
 		return parameter.usedWith.isArray ? `Array<${type}>` : type;
@@ -128,10 +141,8 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 			...pos,
 		});
 
-	const pos = (expression: ts.Expression) => ({
-		start: expression.getStart(file) - context.node.getStart(file) - 1,
-		length: expression.getWidth(file),
-	});
+	const pos = (expression: ts.Expression) =>
+		getNodePosition(expression, context);
 
 	return {
 		any,
@@ -236,35 +247,61 @@ export default class SqlTemplateLanguageService
 
 	getFormattingEditsForRange(
 		context: TemplateContext,
-		start: number,
-		end: number,
+		_start: number,
+		_end: number,
 		settings: ts.EditorSettings
 	): ts.TextChange[] {
 		if (!this.config.enableFormat) {
 			return [];
 		}
 
-		const text = context.text.substring(start, end);
+		const text = context.text;
 		try {
-			const newText = formatText(
-				text,
-				settings.convertTabsToSpaces
+			const newText = formatSql({
+				sql: text,
+				indent: settings.convertTabsToSpaces
 					? {
 							style: "spaces",
 							number: settings.indentSize ?? 4,
 					  }
-					: { style: "tabs" }
-			);
+					: { style: "tabs" },
+				newLine: settings.newLineCharacter ?? "\n",
+			});
 			if (newText !== text) {
-				return [
-					{
-						span: { start, length: end - start },
-						newText,
-					},
-				];
+				const literals = getTemplateLiterals(
+					context.typescript,
+					context.node
+				);
+				const parts = splitSqlByParameters(
+					newText,
+					literals.length - 1
+				);
+				return parts.map((newText, index) => {
+					const literal = literals[index];
+					const span = getNodePosition(literal, context);
+
+					// Template literal nodes contain the start and end tokens
+					// of template literals and template expressions (`, ${ and
+					// }). We don't want to replace those, so we need to remove
+					// them from then span.
+					if (
+						context.typescript.isNoSubstitutionTemplateLiteral(
+							literal
+						) ||
+						context.typescript.isTemplateTail(literal)
+					) {
+						span.start += 1;
+						span.length -= 2;
+					} else {
+						span.start += 1;
+						span.length -= 3;
+					}
+
+					return { span, newText };
+				});
 			}
-		} catch (e) {
-			this.logger.log(`error running pgFormatter: ${e.message}`);
+		} catch (err) {
+			this.logger.log(`error formatting SQL: ${err.message}`);
 		}
 
 		return [];
