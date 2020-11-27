@@ -43,6 +43,7 @@ class SqlTaggedTemplatePlugin implements ts.server.PluginModule {
 		);
 
 		const sqlTemplateLanguageService = new SqlTemplateLanguageService(
+			info.project,
 			logger,
 			this.config,
 			typeChecker,

@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import { format } from "pg-formatter";
+import * as ts from "typescript/lib/tsserverlibrary";
 import { analyze } from "./analysis";
 
 export const detectPerl = (): boolean => {
@@ -11,30 +12,20 @@ export const detectPerl = (): boolean => {
 	}
 };
 
-interface IndentStyleTabs {
-	style: "tabs";
-}
-
-interface IndentStyleSpaces {
-	style: "spaces";
-	number: number;
-}
-
 export const formatSql = ({
 	sql,
-	indent,
-	newLine,
+	formatOptions,
 }: {
 	sql: string;
-	indent: IndentStyleTabs | IndentStyleSpaces;
-	newLine: string;
+	formatOptions: ts.EditorSettings;
 }): string => {
+	const useSpaces = formatOptions.convertTabsToSpaces ?? false;
 	try {
 		return format(sql, {
 			noRcFile: true,
-			spaces: indent.style === "spaces" ? indent.number : undefined,
-			tabs: indent.style === "tabs",
-		}).replace(/(\r\n|\r|\n)/g, newLine);
+			spaces: useSpaces ? formatOptions.indentSize ?? 4 : undefined,
+			tabs: !useSpaces,
+		}).replace(/(\r\n|\r|\n)/g, formatOptions.newLineCharacter ?? "\n");
 	} catch (err) {
 		throw new Error(`pgFormatter failed: ${err.message}`);
 	}
@@ -80,4 +71,36 @@ export const splitSqlByParameters = (
 
 	parts.push(sql.substring(end));
 	return parts;
+};
+
+export const indentForTemplateLiteral = ({
+	text,
+	formatOptions,
+	lineIndentSize,
+}: {
+	text: string;
+	formatOptions: ts.EditorSettings;
+	lineIndentSize: number;
+}): string => {
+	const useSpaces = formatOptions.convertTabsToSpaces ?? false;
+	const indentChar = useSpaces ? " " : "\t";
+	const indentSize = useSpaces ? formatOptions.indentSize ?? 4 : 1;
+	const newLineCharacter = formatOptions.newLineCharacter ?? "\n";
+	if (!useSpaces) {
+		lineIndentSize /= formatOptions.indentSize ?? 4;
+	}
+
+	return (
+		newLineCharacter +
+		text
+			.split(newLineCharacter)
+			.map((line, index, array) => {
+				const isLast = index + 1 === array.length;
+				const indent = indentChar.repeat(
+					isLast ? lineIndentSize : lineIndentSize + indentSize
+				);
+				return indent + line;
+			})
+			.join(newLineCharacter)
+	);
 };

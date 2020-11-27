@@ -8,7 +8,11 @@ import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { pluginName } from "./config";
 import { ParsedPluginConfiguration } from "./configuration";
-import { formatSql, splitSqlByParameters } from "./formatting";
+import {
+	formatSql,
+	splitSqlByParameters,
+	indentForTemplateLiteral,
+} from "./formatting";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { TypeChecker } from "./type-checker";
 import { TypeResolver } from "./type-resolver";
@@ -154,6 +158,7 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 export default class SqlTemplateLanguageService
 	implements TemplateLanguageService {
 	constructor(
+		private readonly project: ts.server.Project,
 		private readonly logger: Logger,
 		private readonly config: ParsedPluginConfiguration,
 		private readonly typeChecker: TypeChecker,
@@ -256,24 +261,29 @@ export default class SqlTemplateLanguageService
 		}
 
 		const text = context.text;
+		const languageService = this.project.getLanguageService(false);
+		const lineIndentSize = languageService.getIndentationAtPosition(
+			context.fileName,
+			context.node.getStart(context.node.getSourceFile()),
+			settings
+		);
 		try {
-			const newText = formatSql({
+			const formatted = formatSql({
 				sql: text,
-				indent: settings.convertTabsToSpaces
-					? {
-							style: "spaces",
-							number: settings.indentSize ?? 4,
-					  }
-					: { style: "tabs" },
-				newLine: settings.newLineCharacter ?? "\n",
+				formatOptions: settings,
 			});
-			if (newText !== text) {
+			const formattedAndIndented = indentForTemplateLiteral({
+				text: formatted,
+				formatOptions: settings,
+				lineIndentSize,
+			});
+			if (formattedAndIndented !== text) {
 				const literals = getTemplateLiterals(
 					context.typescript,
 					context.node
 				);
 				const parts = splitSqlByParameters(
-					newText,
+					formattedAndIndented,
 					literals.length - 1
 				);
 				return parts.map((newText, index) => {

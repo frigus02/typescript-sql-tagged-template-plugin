@@ -1,12 +1,18 @@
-import { formatSql, splitSqlByParameters } from "./formatting";
+import {
+	formatSql,
+	splitSqlByParameters,
+	indentForTemplateLiteral,
+} from "./formatting";
 
 describe(formatSql, () => {
 	test("new line", () => {
 		const sql =
 			"SELECT order_id, status, description FROM orders WHERE user_id = $1 AND status = ANY($2)";
-		expect(
-			formatSql({ sql, indent: { style: "tabs" }, newLine: "\n" })
-		).toEqual(
+		const formatOptions = {
+			convertTabsToSpaces: false,
+			newLineCharacter: "\n",
+		};
+		expect(formatSql({ sql, formatOptions })).toEqual(
 			"SELECT\n\torder_id,\n\tstatus,\n\tdescription\nFROM\n\torders\nWHERE\n\tuser_id = $1\n\tAND status = ANY ($2)\n"
 		);
 	});
@@ -57,5 +63,19 @@ describe(splitSqlByParameters, () => {
 			" AND status = ANY(",
 			") AND other_user != $1",
 		]);
+	});
+});
+
+describe(indentForTemplateLiteral, () => {
+	test("indent", () => {
+		const text = "SELECT\n\t1\n";
+		const formatOptions = {
+			convertTabsToSpaces: false,
+			indentSize: 4,
+			newLineCharacter: "\n",
+		};
+		expect(
+			indentForTemplateLiteral({ text, formatOptions, lineIndentSize: 8 })
+		).toBe("\n\t\t\tSELECT\n\t\t\t\t1\n\t\t");
 	});
 });
