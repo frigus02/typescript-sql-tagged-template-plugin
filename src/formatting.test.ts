@@ -5,13 +5,10 @@ import {
 } from "./formatting";
 
 describe(formatSql, () => {
-	test("new line", () => {
+	test("it works", () => {
 		const sql =
 			"SELECT order_id, status, description FROM orders WHERE user_id = $1 AND status = ANY($2)";
-		const formatOptions = {
-			convertTabsToSpaces: false,
-			newLineCharacter: "\n",
-		};
+		const formatOptions = {};
 		expect(formatSql({ sql, formatOptions })).toEqual(
 			"SELECT\n\torder_id,\n\tstatus,\n\tdescription\nFROM\n\torders\nWHERE\n\tuser_id = $1\n\tAND status = ANY ($2)\n"
 		);
@@ -67,7 +64,7 @@ describe(splitSqlByParameters, () => {
 });
 
 describe(indentForTemplateLiteral, () => {
-	test("indent", () => {
+	test("simple case", () => {
 		const text = "SELECT\n\t1\n";
 		const formatOptions = {
 			convertTabsToSpaces: false,

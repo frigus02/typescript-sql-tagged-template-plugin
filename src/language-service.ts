@@ -80,6 +80,34 @@ const getNodePosition = (node: ts.Node, context: TemplateContext) => {
 	};
 };
 
+const getTemplateLiteralTextPosition = (
+	literal:
+		| ts.NoSubstitutionTemplateLiteral
+		| ts.TemplateHead
+		| ts.TemplateMiddle
+		| ts.TemplateTail,
+	context: TemplateContext
+) => {
+	const span = getNodePosition(literal, context);
+
+	// Template literal nodes contain the start and end tokens
+	// of template literals and template expressions (`, ${ and
+	// }). We don't want to replace those, so we need to remove
+	// them from the span.
+	if (
+		context.typescript.isNoSubstitutionTemplateLiteral(literal) ||
+		context.typescript.isTemplateTail(literal)
+	) {
+		span.start += 1;
+		span.length -= 2;
+	} else {
+		span.start += 1;
+		span.length -= 3;
+	}
+
+	return span;
+};
+
 const stringifyParameter = (parameter: Parameter): string =>
 	[
 		parameter.usedWith.schema,
@@ -261,10 +289,16 @@ export default class SqlTemplateLanguageService
 			return [];
 		}
 
+		const scriptInfo = this.project.getScriptInfo(context.fileName);
+		if (!scriptInfo) {
+			this.logger.log("skip formatting because ScriptInfo is undefined");
+			return [];
+		}
+
 		const text = context.text;
 		const lineIndent = getLineIndentationByNode(
 			context.node,
-			this.project.getScriptInfo(context.fileName)!,
+			scriptInfo,
 			settings
 		);
 		try {
@@ -288,25 +322,10 @@ export default class SqlTemplateLanguageService
 				);
 				return parts.map((newText, index) => {
 					const literal = literals[index];
-					const span = getNodePosition(literal, context);
-
-					// Template literal nodes contain the start and end tokens
-					// of template literals and template expressions (`, ${ and
-					// }). We don't want to replace those, so we need to remove
-					// them from then span.
-					if (
-						context.typescript.isNoSubstitutionTemplateLiteral(
-							literal
-						) ||
-						context.typescript.isTemplateTail(literal)
-					) {
-						span.start += 1;
-						span.length -= 2;
-					} else {
-						span.start += 1;
-						span.length -= 3;
-					}
-
+					const span = getTemplateLiteralTextPosition(
+						literal,
+						context
+					);
 					return { span, newText };
 				});
 			}
