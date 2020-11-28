@@ -1,6 +1,6 @@
 {
 	"name": "typescript-sql-tagged-template-plugin",
-	"version": "0.0.16",
+	"version": "0.1.0",
 	"description": "TypeScript language service plugin that adds type checking for sql tagged templates",
 	"keywords": [
 		"TypeScript",
