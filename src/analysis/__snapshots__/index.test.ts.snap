@@ -1,22 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`analyze any.sql 1`] = `
+exports[`analyze snapshots any.sql 1`] = `
 Object {
-  "parameters": Map {
-    1 => Object {
-      "column": "status",
-      "isArray": true,
-      "schema": undefined,
-      "table": "orders",
+  "parameters": Array [
+    Object {
+      "index": 1,
+      "location": 46,
+      "usedWith": Object {
+        "column": "status",
+        "isArray": true,
+        "schema": undefined,
+        "table": "orders",
+      },
     },
-  },
+  ],
   "warnings": Array [],
 }
 `;
 
-exports[`analyze select.sql 1`] = `
+exports[`analyze snapshots select.sql 1`] = `
 Object {
-  "parameters": Map {},
+  "parameters": Array [],
   "warnings": Array [],
 }
 `;

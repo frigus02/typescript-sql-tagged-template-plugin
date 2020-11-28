@@ -8,6 +8,12 @@ import { Analysis, analyze, ParseError } from "./analysis";
 import { Parameter } from "./analysis/params";
 import { pluginName } from "./config";
 import { ParsedPluginConfiguration } from "./configuration";
+import {
+	formatSql,
+	splitSqlByParameters,
+	indentForTemplateLiteral,
+	getLineIndentationByNode,
+} from "./formatting";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { TypeChecker } from "./type-checker";
 import { TypeResolver } from "./type-resolver";
@@ -32,7 +38,9 @@ const diagnosticMessages: Record<DiagnosticMessageCode, DiagnosticMessage> = {
 	},
 	100_002: {
 		messageText: (p: Parameter) =>
-			`Cannot find type for parameter ${stringifyParameter(p)} in schema.`,
+			`Cannot find type for parameter ${stringifyParameter(
+				p
+			)} in schema.`,
 		category: "Error",
 	},
 	100_003: {
@@ -59,12 +67,53 @@ const getTemplateExpressions = (
 		? node.templateSpans.map((span) => span.expression)
 		: [];
 
+const getTemplateLiterals = (typescript: typeof ts, node: ts.TemplateLiteral) =>
+	typescript.isTemplateExpression(node)
+		? [node.head, ...node.templateSpans.map((span) => span.literal)]
+		: [node];
+
+const getNodePosition = (node: ts.Node, context: TemplateContext) => {
+	const file = context.node.getSourceFile();
+	return {
+		start: node.getStart(file) - context.node.getStart(file) - 1,
+		length: node.getWidth(file),
+	};
+};
+
+const getTemplateLiteralTextPosition = (
+	literal:
+		| ts.NoSubstitutionTemplateLiteral
+		| ts.TemplateHead
+		| ts.TemplateMiddle
+		| ts.TemplateTail,
+	context: TemplateContext
+) => {
+	const span = getNodePosition(literal, context);
+
+	// Template literal nodes contain the start and end tokens
+	// of template literals and template expressions (`, ${ and
+	// }). We don't want to replace those, so we need to remove
+	// them from the span.
+	if (
+		context.typescript.isNoSubstitutionTemplateLiteral(literal) ||
+		context.typescript.isTemplateTail(literal)
+	) {
+		span.start += 1;
+		span.length -= 2;
+	} else {
+		span.start += 1;
+		span.length -= 3;
+	}
+
+	return span;
+};
+
 const stringifyParameter = (parameter: Parameter): string =>
 	[
-		parameter.schema,
-		parameter.table,
-		parameter.column,
-		parameter.jsonPath && parameter.jsonPath.path,
+		parameter.usedWith.schema,
+		parameter.usedWith.table,
+		parameter.usedWith.column,
+		parameter.usedWith.jsonPath?.path,
 	]
 		.filter((x) => x)
 		.join(".");
@@ -74,16 +123,16 @@ const getParameterType = (
 	schemaJson: DatabaseSchema,
 	defaultSchemaName: string
 ): ColumnDefinition | undefined => {
-	const schema = parameter.schema || defaultSchemaName;
+	const schema = parameter.usedWith.schema ?? defaultSchemaName;
 	const dbSchema = schemaJson[schema];
-	const dbTable = dbSchema && dbSchema[parameter.table];
-	const dbColumn = dbTable && dbTable[parameter.column];
+	const dbTable = dbSchema?.[parameter.usedWith.table];
+	const dbColumn = dbTable?.[parameter.usedWith.column];
 	if (dbColumn) {
 		const type =
-			parameter.jsonPath && parameter.jsonPath.isText
+			parameter.usedWith.jsonPath?.isText ?? false
 				? "string | null"
 				: dbColumn;
-		return parameter.isArray ? `Array<${type}>` : type;
+		return parameter.usedWith.isArray ? `Array<${type}>` : type;
 	}
 };
 
@@ -125,10 +174,8 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 			...pos,
 		});
 
-	const pos = (expression: ts.Expression) => ({
-		start: expression.getStart(file) - context.node.getStart(file) - 1,
-		length: expression.getWidth(file),
-	});
+	const pos = (expression: ts.Expression) =>
+		getNodePosition(expression, context);
 
 	return {
 		any,
@@ -140,6 +187,7 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 export default class SqlTemplateLanguageService
 	implements TemplateLanguageService {
 	constructor(
+		private readonly project: ts.server.Project,
 		private readonly logger: Logger,
 		private readonly config: ParsedPluginConfiguration,
 		private readonly typeChecker: TypeChecker,
@@ -147,6 +195,10 @@ export default class SqlTemplateLanguageService
 	) {}
 
 	getSemanticDiagnostics(context: TemplateContext): ts.Diagnostic[] {
+		if (!this.config.enableDiagnostics) {
+			return [];
+		}
+
 		const factory = getDiagnosticFactory(context);
 
 		let analysis: Analysis;
@@ -154,8 +206,18 @@ export default class SqlTemplateLanguageService
 			analysis = analyze(context.text);
 		} catch (e) {
 			return e instanceof ParseError
-				? [factory.own(100_001, e, { start: e.cursorPosition - 1, length: 1 })]
-				: [factory.own(100_000, e, { start: 0, length: context.text.length })];
+				? [
+						factory.own(100_001, e, {
+							start: e.cursorPosition - 1,
+							length: 1,
+						}),
+				  ]
+				: [
+						factory.own(100_000, e, {
+							start: 0,
+							length: context.text.length,
+						}),
+				  ];
 		}
 
 		for (const warning of analysis.warnings) {
@@ -166,6 +228,7 @@ export default class SqlTemplateLanguageService
 
 		const schema = this.config.schema;
 		if (!schema) {
+			this.logger.log("skip type checks because no schema configured");
 			return [];
 		}
 
@@ -173,9 +236,10 @@ export default class SqlTemplateLanguageService
 			context.typescript,
 			context.node
 		);
-		const diagnostics = Array.from(analysis.parameters.entries())
-			.map(([index, parameter]) => ({
-				expression: expressions[index - 1],
+		const diagnostics = analysis.parameters
+			.filter((parameter) => expressions.length >= parameter.index)
+			.map((parameter) => ({
+				expression: expressions[parameter.index - 1],
 				parameter,
 			}))
 			.map(({ expression, parameter }) => {
@@ -185,7 +249,13 @@ export default class SqlTemplateLanguageService
 					this.config.defaultSchemaName
 				);
 				if (!parameterType) {
-					return [factory.own(100_002, parameter, factory.pos(expression))];
+					return [
+						factory.own(
+							100_002,
+							parameter,
+							factory.pos(expression)
+						),
+					];
 				}
 
 				const expressionType = this.typeResolver.getType(expression);
@@ -207,5 +277,62 @@ export default class SqlTemplateLanguageService
 			});
 
 		return flatten(diagnostics);
+	}
+
+	getFormattingEditsForRange(
+		context: TemplateContext,
+		_start: number,
+		_end: number,
+		settings: ts.EditorSettings
+	): ts.TextChange[] {
+		if (!this.config.enableFormat) {
+			return [];
+		}
+
+		const scriptInfo = this.project.getScriptInfo(context.fileName);
+		if (!scriptInfo) {
+			this.logger.log("skip formatting because ScriptInfo is undefined");
+			return [];
+		}
+
+		const text = context.text;
+		const lineIndent = getLineIndentationByNode(
+			context.node,
+			scriptInfo,
+			settings
+		);
+		try {
+			const formatted = formatSql({
+				sql: text,
+				formatOptions: settings,
+			});
+			const formattedAndIndented = indentForTemplateLiteral({
+				text: formatted,
+				formatOptions: settings,
+				lineIndent,
+			});
+			if (formattedAndIndented !== text) {
+				const literals = getTemplateLiterals(
+					context.typescript,
+					context.node
+				);
+				const parts = splitSqlByParameters(
+					formattedAndIndented,
+					literals.length - 1
+				);
+				return parts.map((newText, index) => {
+					const literal = literals[index];
+					const span = getTemplateLiteralTextPosition(
+						literal,
+						context
+					);
+					return { span, newText };
+				});
+			}
+		} catch (err) {
+			this.logger.log(`error formatting SQL: ${err.message}`);
+		}
+
+		return [];
 	}
 }

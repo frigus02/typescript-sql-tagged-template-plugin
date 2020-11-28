@@ -1,18 +1,25 @@
 import { resolve as resolvePath } from "path";
 import * as ts from "typescript/lib/tsserverlibrary";
-import { DatabaseSchema, parseSchema } from "./schema";
 import { Logger } from "typescript-template-language-service-decorator";
+import { detectPerl } from "./formatting";
+import { DatabaseSchema, parseSchema } from "./schema";
 
 export interface PluginConfiguration {
+	readonly enableDiagnostics?: boolean;
+	readonly enableFormat?: boolean;
 	readonly schemaFile?: string;
 	readonly defaultSchemaName?: string;
 }
 
 const defaults = {
+	enableDiagnostics: true,
+	enableFormat: true,
 	defaultSchemaName: "public",
 };
 
 export class ParsedPluginConfiguration {
+	enableDiagnostics: boolean = defaults.enableDiagnostics;
+	enableFormat: boolean = defaults.enableFormat;
 	schema?: DatabaseSchema;
 	defaultSchemaName: string = defaults.defaultSchemaName;
 
@@ -23,6 +30,15 @@ export class ParsedPluginConfiguration {
 
 	update(config: PluginConfiguration) {
 		this.logger.log("new config: " + JSON.stringify(config));
+
+		this.enableDiagnostics =
+			config.enableDiagnostics ?? defaults.enableDiagnostics;
+
+		this.enableFormat = config.enableFormat ?? defaults.enableFormat;
+		if (this.enableFormat && !detectPerl()) {
+			this.logger.log("could not find Perl in PATH; disabling format");
+			this.enableFormat = false;
+		}
 
 		this.schema = undefined;
 		if (config.schemaFile) {

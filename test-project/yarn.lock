@@ -2,14 +2,27 @@
 # yarn lockfile v1
 
 
+pg-formatter@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/pg-formatter/-/pg-formatter-1.1.2.tgz#f30f7bb3789b18084a0038d8f9580e70dde19cb4"
+  integrity sha512-yNCPb+8nJaHjIc7zzJbSgPkF6MTWIwTsk/ray6GUEdMzoQokxy8gsSAjeCXI0orwPoL05Yi63sy9QgTy4+CFQA==
+  dependencies:
+    shell-quote "^1.7.2"
+
 pg-query-emscripten@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/pg-query-emscripten/-/pg-query-emscripten-0.1.0.tgz#a4c6c7c6b3645ab0a4436bf650f3bcdf5b530c23"
   integrity sha512-Awwf0s6gyVZEmZeMLXnXZOIQveqVEBFhxMkR0UcMmijwX/y9FW1od71X1hNRtGFWrU/ML5sxerZyH20pvpLGuA==
 
+shell-quote@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.7.2.tgz#67a7d02c76c9da24f99d20808fcaded0e0e04be2"
+  integrity sha512-mRz/m/JVscCrkMyPqHc/bczi3OQHkLTqXHEFu0zDhK/qfv3UcOA4SVmRCLmos4bhjr9ekVQubj/R7waKapmiQg==
+
 "typescript-sql-tagged-template-plugin@file:./..":
-  version "0.0.1"
+  version "0.0.16"
   dependencies:
+    pg-formatter "^1.1.2"
     pg-query-emscripten "^0.1.0"
     typescript-template-language-service-decorator "^2.2.0"
 
@@ -18,7 +31,7 @@ typescript-template-language-service-decorator@^2.2.0:
   resolved "https://registry.yarnpkg.com/typescript-template-language-service-decorator/-/typescript-template-language-service-decorator-2.2.0.tgz#4ee6d580f307fb9239978e69626f2775b8a59b2a"
   integrity sha512-xiolqt1i7e22rpqMaprPgSFVgU64u3b9n6EJlAaUYE61jumipKAdI1+O5khPlWslpTUj80YzjUKjJ2jxT0D74w==
 
-typescript@^3.5.3:
-  version "3.5.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.3.tgz#c830f657f93f1ea846819e929092f5fe5983e977"
-  integrity sha512-ACzBtm/PhXBDId6a6sDJfroT2pOWt/oOnk4/dElG5G33ZL776N3Y6/6bKZJBFpd+b05F3Ct9qDjMeJmRWtE2/g==
+typescript@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.2.tgz#6369ef22516fe5e10304aae5a5c4862db55380e9"
+  integrity sha512-thGloWsGH3SOxv1SoY7QojKi0tc+8FnOmiarEGMbd/lar7QOEd3hvlx3Fp5y6FlDUGl9L+pd4n2e+oToGMmhRQ==

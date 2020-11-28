@@ -5,7 +5,7 @@
 		"lib": [],
 		"plugins": [
 			{
-				"name": "/Users/jkuehle/Projects/typescript-sql-tagged-template-plugin/build",
+				"name": "C:\\code\\typescript-sql-tagged-template-plugin\\build",
 				"schemaFile": "./db-schema.json"
 			}
 		]
