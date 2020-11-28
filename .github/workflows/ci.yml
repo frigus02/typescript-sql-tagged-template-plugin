@@ -1,0 +1,16 @@
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+name: CI
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn test
