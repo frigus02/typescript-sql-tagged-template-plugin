@@ -12,6 +12,7 @@ import {
 	formatSql,
 	splitSqlByParameters,
 	indentForTemplateLiteral,
+	getLineIndentationByNode,
 } from "./formatting";
 import { DatabaseSchema, ColumnDefinition } from "./schema";
 import { TypeChecker } from "./type-checker";
@@ -261,10 +262,9 @@ export default class SqlTemplateLanguageService
 		}
 
 		const text = context.text;
-		const languageService = this.project.getLanguageService(false);
-		const lineIndentSize = languageService.getIndentationAtPosition(
-			context.fileName,
-			context.node.getStart(context.node.getSourceFile()),
+		const lineIndent = getLineIndentationByNode(
+			context.node,
+			this.project.getScriptInfo(context.fileName)!,
 			settings
 		);
 		try {
@@ -275,7 +275,7 @@ export default class SqlTemplateLanguageService
 			const formattedAndIndented = indentForTemplateLiteral({
 				text: formatted,
 				formatOptions: settings,
-				lineIndentSize,
+				lineIndent,
 			});
 			if (formattedAndIndented !== text) {
 				const literals = getTemplateLiterals(

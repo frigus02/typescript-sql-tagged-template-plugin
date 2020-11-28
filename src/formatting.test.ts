@@ -72,10 +72,24 @@ describe(indentForTemplateLiteral, () => {
 		const formatOptions = {
 			convertTabsToSpaces: false,
 			indentSize: 4,
+			tabSize: 4,
 			newLineCharacter: "\n",
 		};
 		expect(
-			indentForTemplateLiteral({ text, formatOptions, lineIndentSize: 8 })
+			indentForTemplateLiteral({ text, formatOptions, lineIndent: 8 })
+		).toBe("\n\t\t\tSELECT\n\t\t\t\t1\n\t\t");
+	});
+
+	test("line indent doesn't divide by tab size", () => {
+		const text = "SELECT\n\t1\n";
+		const formatOptions = {
+			convertTabsToSpaces: false,
+			indentSize: 4,
+			tabSize: 4,
+			newLineCharacter: "\n",
+		};
+		expect(
+			indentForTemplateLiteral({ text, formatOptions, lineIndent: 6 })
 		).toBe("\n\t\t\tSELECT\n\t\t\t\t1\n\t\t");
 	});
 });
