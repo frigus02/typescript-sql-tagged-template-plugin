@@ -1,0 +1,44 @@
+# In a parameters list, end or start with the comma. Default: end
+comma=end
+
+# In insert statement, add a newline after each comma.
+comma-break=0
+
+# Add a newline between statements in transaction regroupement. Default is to group statements.
+nogrouping=0
+
+# Change the case of the reserved keyword. Default is uppercase: 2.
+# Values: 0=>unchanged, 1=>lowercase, 2=>uppercase, 3=>capitalize.
+keyword-case=2
+
+# Change the case of the data type name. Default is lowercase: 1.
+# Values: 0=>unchanged, 1=>lowercase, 2=>uppercase, 3=>capitalize.
+type-case=1
+
+# Change the case of the reserved keyword. Default is unchanged: 0.
+# Values: 0=>unchanged, 1=>lowercase, 2=>uppercase, 3=>capitalize.
+function-case=0
+
+# Maximum length of a query, it will be cutted above the given size. Default: no truncate.
+maxlength=0
+
+# Remove any comment from SQL code.
+nocomment=0
+
+# Add RedShift keyworks to the list of SQL keyworks.
+redshift=0
+
+# Dynamic code separator, default to single quote.
+separator=
+
+# Try another formatting type for some statements.
+format-type=0
+
+# Wrap queries at a certain length.
+wrap-limit=0
+
+# Number of column after which lists must be wrapped.
+wrap-after=0
+
+# with --wrap-limit, apply reformatting to comments.
+wrap-comment=0

@@ -305,6 +305,7 @@ export default class SqlTemplateLanguageService
 			const formatted = formatSql({
 				sql: text,
 				formatOptions: settings,
+				pgFormatterConfigFile: this.config.pgFormatterConfigFile,
 			});
 			const formattedAndIndented = indentForTemplateLiteral({
 				text: formatted,

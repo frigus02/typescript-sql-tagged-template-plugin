@@ -1,43 +1,59 @@
-import { execSync } from "child_process";
-import { format } from "pg-formatter";
+import { spawnSync } from "child_process";
+import { resolve as resolvePath } from "path";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { analyze } from "./analysis";
 
 const DEFAULT_TAB_SIZE = 4;
 const DEFAULT_INDENT_SIZE = 4;
 const DEFAULT_NEW_LINE_CHARACTER = "\n";
+const PG_FORMATTER_PATH = resolvePath(
+	__dirname,
+	"../vendor/pgFormatter/pg_format"
+);
 
 export const detectPerl = (): boolean => {
-	try {
-		execSync("perl -v");
-		return true;
-	} catch (err) {
-		return false;
-	}
+	const proc = spawnSync("perl", ["-v"]);
+	return proc.status === 0;
 };
 
 export const formatSql = ({
 	sql,
 	formatOptions,
+	pgFormatterConfigFile,
 }: {
 	sql: string;
 	formatOptions: ts.EditorSettings;
+	pgFormatterConfigFile?: string;
 }): string => {
 	const useSpaces = formatOptions.convertTabsToSpaces ?? false;
-	try {
-		return format(sql, {
-			noRcFile: true,
-			spaces: useSpaces
-				? formatOptions.indentSize ?? DEFAULT_INDENT_SIZE
-				: undefined,
-			tabs: !useSpaces,
-		}).replace(
-			/(\r\n|\r|\n)/g,
-			formatOptions.newLineCharacter ?? DEFAULT_NEW_LINE_CHARACTER
-		);
-	} catch (err) {
-		throw new Error(`pgFormatter failed: ${err.message}`);
+	const indentSize = formatOptions.indentSize ?? DEFAULT_INDENT_SIZE;
+	const proc = spawnSync(
+		"perl",
+		[
+			PG_FORMATTER_PATH,
+			...(pgFormatterConfigFile
+				? ["--config", pgFormatterConfigFile]
+				: ["--no-rcfile"]),
+			...(useSpaces ? ["--spaces", indentSize.toString()] : ["--tabs"]),
+		],
+		{
+			encoding: "utf8",
+			input: sql,
+		}
+	);
+	if (proc.error) {
+		throw new Error(`pgFormatter failed: ${proc.error.message}`);
 	}
+	if (proc.status !== 0) {
+		throw new Error(
+			`pgFormatter exited with ${proc.status}: ${proc.stderr}`
+		);
+	}
+
+	return proc.stdout.replace(
+		/(\r\n|\r|\n)/g,
+		formatOptions.newLineCharacter ?? DEFAULT_NEW_LINE_CHARACTER
+	);
 };
 
 export const splitSqlByParameters = (

@@ -1,3 +1,5 @@
+build/
 scripts/pg-query-emscripten-types/enum_defs.json
 scripts/pg-query-emscripten-types/struct_defs.json
+vendor/
 package.json

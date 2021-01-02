@@ -84,7 +84,7 @@ const generateTypeDeclaration = () => {
 	return `
 		declare module "pg-query-emscripten" {
 			interface PgNode {}
-			
+
 			${enums}
 			${interfaces}
 
@@ -95,12 +95,12 @@ const generateTypeDeclaration = () => {
 				funcname: string;
 				context: string;
 			}
-			
+
 			interface PgParseResult {
 				parse_tree?: PgNode[];
 				error?: PgParseError;
 			}
-			
+
 			function parse(query: string): PgParseResult;
 		}
 	`;
@@ -135,4 +135,7 @@ async function main() {
 	);
 }
 
-main().catch(console.error);
+main().catch((err) => {
+	console.error(err);
+	process.exitCode = 1;
+});
