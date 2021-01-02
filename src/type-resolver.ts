@@ -62,7 +62,13 @@ const getTypeArgumentNames = (
 			const rtype = <ts.TypeReference>type;
 			if (rtype.typeArguments) {
 				return rtype.typeArguments.map((arg) =>
-					getTypeName(typescript, checker, arg, seenTypes, resolvedTypes)
+					getTypeName(
+						typescript,
+						checker,
+						arg,
+						seenTypes,
+						resolvedTypes
+					)
 				);
 			}
 		}
@@ -120,8 +126,13 @@ const getTypeName = (
 		let name = "{ ";
 		if (type.symbol.members) {
 			const members = getSymbolTableValues(type.symbol.members);
-			const typeParamTypes: { [key: string]: string | undefined } = members
-				.filter((member) => member.flags & typescript.SymbolFlags.TypeParameter)
+			const typeParamTypes: {
+				[key: string]: string | undefined;
+			} = members
+				.filter(
+					(member) =>
+						member.flags & typescript.SymbolFlags.TypeParameter
+				)
 				.map((member, i) => [
 					member.escapedName as string,
 					typeArgumentNames[i],

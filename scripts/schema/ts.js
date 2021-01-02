@@ -13,7 +13,9 @@ exports.mapSchemaToTypeScriptTypes = (dbSchema) => {
 			}
 
 			for (const columnName of Object.keys(schema.tables[tableName])) {
-				result[schemaName][tableName][columnName] = mapPostgresToTypeScriptType(
+				result[schemaName][tableName][
+					columnName
+				] = mapPostgresToTypeScriptType(
 					schema.tables[tableName][columnName],
 					schema.enums
 				);

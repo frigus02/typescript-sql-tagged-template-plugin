@@ -33,7 +33,9 @@ describe(TypeResolver, () => {
 				throw Error("Template expression not found");
 			}
 
-			const checker = new TypeResolver(ts, () => program.getTypeChecker());
+			const checker = new TypeResolver(ts, () =>
+				program.getTypeChecker()
+			);
 			const type = checker.getType(node);
 			expect(type).toMatchSnapshot();
 		});

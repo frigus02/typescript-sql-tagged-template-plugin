@@ -10,7 +10,9 @@ exports.exportSchema = async (schemaNames) => {
 	const result = {};
 	const schemas = Object.keys(tables).filter(
 		(schema) =>
-			!schemaNames || schemaNames.length === 0 || schemaNames.includes(schema)
+			!schemaNames ||
+			schemaNames.length === 0 ||
+			schemaNames.includes(schema)
 	);
 	for (const schema of schemas) {
 		result[schema] = {
