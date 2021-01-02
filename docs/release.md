@@ -8,7 +8,11 @@ To release a new version, follow these steps:
    VERSION="0.0.16"
    ```
 
-1. Update the version in the [package.json](../package.json). Then commit those changes:
+1. Update the [CHANGELOG.md](../CHANGELOG.md).
+
+1. Update the version in the [package.json](../package.json).
+
+1. Commit those changes:
 
    ```sh
    git commit -am "v$VERSION"
