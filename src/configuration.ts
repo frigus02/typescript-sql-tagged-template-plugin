@@ -9,6 +9,7 @@ export interface PluginConfiguration {
 	readonly enableFormat?: boolean;
 	readonly schemaFile?: string;
 	readonly defaultSchemaName?: string;
+	readonly pgFormatterConfigFile?: string;
 }
 
 const defaults = {
@@ -22,6 +23,7 @@ export class ParsedPluginConfiguration {
 	enableFormat: boolean = defaults.enableFormat;
 	schema?: DatabaseSchema;
 	defaultSchemaName: string = defaults.defaultSchemaName;
+	pgFormatterConfigFile?: string;
 
 	constructor(
 		private readonly project: ts.server.Project,
@@ -59,5 +61,12 @@ export class ParsedPluginConfiguration {
 
 		this.defaultSchemaName =
 			config.defaultSchemaName || defaults.defaultSchemaName;
+
+		this.pgFormatterConfigFile = config.pgFormatterConfigFile
+			? resolvePath(
+					this.project.getCurrentDirectory(),
+					config.pgFormatterConfigFile
+			  )
+			: undefined;
 	}
 }

@@ -19,9 +19,11 @@ export const detectPerl = (): boolean => {
 export const formatSql = ({
 	sql,
 	formatOptions,
+	pgFormatterConfigFile,
 }: {
 	sql: string;
 	formatOptions: ts.EditorSettings;
+	pgFormatterConfigFile?: string;
 }): string => {
 	const useSpaces = formatOptions.convertTabsToSpaces ?? false;
 	const indentSize = formatOptions.indentSize ?? DEFAULT_INDENT_SIZE;
@@ -29,7 +31,9 @@ export const formatSql = ({
 		"perl",
 		[
 			PG_FORMATTER_PATH,
-			"--no-rcfile",
+			...(pgFormatterConfigFile
+				? ["--config", pgFormatterConfigFile]
+				: ["--no-rcfile"]),
 			...(useSpaces ? ["--spaces", indentSize.toString()] : ["--tabs"]),
 		],
 		{
