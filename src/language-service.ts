@@ -185,7 +185,8 @@ const getDiagnosticFactory = (context: TemplateContext) => {
 };
 
 export default class SqlTemplateLanguageService
-	implements TemplateLanguageService {
+	implements TemplateLanguageService
+{
 	constructor(
 		private readonly project: ts.server.Project,
 		private readonly logger: Logger,
