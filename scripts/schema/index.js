@@ -12,14 +12,14 @@ const generateSchema = async (schemaNames) => {
 const printUsage = () => {
 	const node = process.argv0;
 	const program = relativePath(process.cwd(), process.argv[1]);
-	console.log(`Usage: ${node} ${program} [SCHEMA_NAME...]`);
-	console.log("");
-	console.log(
+	console.error(`Usage: ${node} ${program} [SCHEMA_NAME...]`);
+	console.error("");
+	console.error(
 		"Use the Postgres environment variables to configure connection to the database, e.g. PGHOST, PGPORT, PGDATABASE, PGUSER and PGPASSWORD."
 	);
-	console.log("");
-	console.log(
-		`Example: PGHOST=localhost PGUSER=postgres PGPASSWORD=secret ${node} ${program} schema.json public`
+	console.error("");
+	console.error(
+		`Example: PGHOST=localhost PGUSER=postgres PGPASSWORD=secret ${node} ${program} public > schema.json`
 	);
 };
 
