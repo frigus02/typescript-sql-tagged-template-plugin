@@ -331,7 +331,7 @@ export default class SqlTemplateLanguageService
 					return { span, newText };
 				});
 			}
-		} catch (err) {
+		} catch (err: any) {
 			this.logger.log(`error formatting SQL: ${err.message}`);
 		}
 

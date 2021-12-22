@@ -53,7 +53,7 @@ export class ParsedPluginConfiguration {
 			if (content) {
 				try {
 					this.schema = parseSchema(content);
-				} catch (e) {
+				} catch (e: any) {
 					this.logger.log(`error parsing schema file: ${e.message}`);
 				}
 			}

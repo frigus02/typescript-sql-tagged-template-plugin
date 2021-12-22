@@ -140,12 +140,14 @@ const getTypeName = (
 				.reduce((acc, [name, type]) => ({ ...acc, [name]: type }), {});
 
 			for (const member of members.filter(
-				(member) => member.flags & typescript.SymbolFlags.Property
+				(member) =>
+					member.flags & typescript.SymbolFlags.Property &&
+					member.valueDeclaration
 			)) {
 				let memberType = getNodeTypeName(
 					typescript,
 					checker,
-					member.valueDeclaration,
+					member.valueDeclaration!,
 					seenTypes,
 					resolvedTypes
 				);
