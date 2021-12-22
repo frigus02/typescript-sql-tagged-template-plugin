@@ -3,6 +3,7 @@
 		"target": "es2018",
 		"module": "commonjs",
 		"sourceMap": true,
+		"declaration": true,
 		"outDir": "build",
 		"rootDir": "src",
 		"strict": true,
