@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-12-22
+
+### Added
+
+- Add TypeScript declaration files to npm package.
+
 ## [0.1.1] - 2021-01-02
 
 ### Added
@@ -18,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 - Support formatting using pgFormatter.
 
-[unreleased]: https://github.com/frigus02/typescript-sql-tagged-template-plugin/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/frigus02/typescript-sql-tagged-template-plugin/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/frigus02/typescript-sql-tagged-template-plugin/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/frigus02/typescript-sql-tagged-template-plugin/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/frigus02/typescript-sql-tagged-template-plugin/compare/v0.0.16...v0.1.0
