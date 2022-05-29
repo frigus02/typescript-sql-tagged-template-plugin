@@ -33,9 +33,7 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 	}
 
 	getScriptSnapshot(fileName: string) {
-		const fileText = fileName.includes("node_modules")
-			? this.typescript.sys.readFile(fileName)
-			: this.files.get(fileName);
+		const fileText = this.readFile(fileName);
 		if (fileText) {
 			return this.typescript.ScriptSnapshot.fromString(fileText);
 		}
@@ -47,6 +45,18 @@ export default class VirtualServiceHost implements ts.LanguageServiceHost {
 
 	getDefaultLibFileName(options: ts.CompilerOptions) {
 		return this.typescript.getDefaultLibFilePath(options);
+	}
+
+	fileExists(path: string): boolean {
+		return path.includes("node_modules")
+			? this.typescript.sys.fileExists(path)
+			: this.files.has(path);
+	}
+
+	readFile(path: string, encoding?: string | undefined): string | undefined {
+		return path.includes("node_modules")
+			? this.typescript.sys.readFile(path, encoding)
+			: this.files.get(path);
 	}
 
 	useCaseSensitiveFileNames() {
