@@ -20,7 +20,7 @@ import { TypeResolver } from "./type-resolver";
 import { flatten } from "./utils";
 
 const diagnosticMessageCodes = [100_000, 100_001, 100_002, 100_003] as const;
-type DiagnosticMessageCode = typeof diagnosticMessageCodes[number];
+type DiagnosticMessageCode = (typeof diagnosticMessageCodes)[number];
 
 interface DiagnosticMessage {
 	messageText: (arg: any) => string;
