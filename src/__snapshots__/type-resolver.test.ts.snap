@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TypeResolver array.ts 1`] = `"Array<\\"todo\\" | \\"in_progress\\" | \\"finished\\">"`;
+exports[`TypeResolver array.ts 1`] = `"Array<"todo" | "in_progress" | "finished">"`;
 
 exports[`TypeResolver builtin-arraybuffer.ts 1`] = `"ArrayBuffer"`;
 
@@ -18,16 +18,16 @@ exports[`TypeResolver builtin-object.ts 1`] = `"Object"`;
 
 exports[`TypeResolver builtin-string.ts 1`] = `"String"`;
 
-exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+exports[`TypeResolver generic-interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: "todo" | "in_progress" | "finished"; }"`;
 
-exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: \\"todo\\" | \\"in_progress\\" | \\"finished\\"; }"`;
+exports[`TypeResolver interface.ts 1`] = `"{ prop1: string; prop2: number; prop3: "todo" | "in_progress" | "finished"; }"`;
 
 exports[`TypeResolver interface-union.ts 1`] = `"{ prop1: string; } | { prop2: string; }"`;
 
-exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<\\"Apple\\" | \\"Pear\\" | \\"Other\\">; }; }"`;
+exports[`TypeResolver nested-interface.ts 1`] = `"{ name: string; addresses: Array<{ street: string; city: string; }>; favorites: { fruit: Array<"Apple" | "Pear" | "Other">; }; }"`;
 
 exports[`TypeResolver nullable.ts 1`] = `"undefined | string"`;
 
 exports[`TypeResolver simple.ts 1`] = `"string"`;
 
-exports[`TypeResolver union.ts 1`] = `"\\"todo\\" | \\"in_progress\\" | \\"finished\\""`;
+exports[`TypeResolver union.ts 1`] = `""todo" | "in_progress" | "finished""`;

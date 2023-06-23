@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`analyze snapshots any.sql 1`] = `
-Object {
-  "parameters": Array [
-    Object {
+{
+  "parameters": [
+    {
       "index": 1,
       "location": 46,
-      "usedWith": Object {
+      "usedWith": {
         "column": "status",
         "isArray": true,
         "schema": undefined,
@@ -14,13 +14,13 @@ Object {
       },
     },
   ],
-  "warnings": Array [],
+  "warnings": [],
 }
 `;
 
 exports[`analyze snapshots select.sql 1`] = `
-Object {
-  "parameters": Array [],
-  "warnings": Array [],
+{
+  "parameters": [],
+  "warnings": [],
 }
 `;
